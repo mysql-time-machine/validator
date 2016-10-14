@@ -8,6 +8,10 @@ import com.booking.validator.service.task.*;
 import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
 import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
 import com.booking.validator.service.utils.CommandLineArguments;
+import com.booking.validator.service.utils.Service;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jvm.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 
@@ -16,10 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Created by psalimov on 9/2/16.
@@ -58,8 +64,13 @@ public class Launcher {
         LOGGER.info("Validator service started.");
 
         try {
+
             for(;;) Thread.sleep(Long.MAX_VALUE);
+
         } catch (InterruptedException e) {
+
+            LOGGER.info("Validator service interrupted.");
+
             return;
         }
 
@@ -74,16 +85,38 @@ public class Launcher {
 
     public void launch(){
 
-        new Validator( getTaskSupplier(), getResultConsumer(), getErrorConsumer() ).start();
+        MetricRegistry registry = getMetricRegistry();
+
+        Service reporter =  (new ReporterServiceFactory()).produce(registry, validatorConfiguration.getReporter().getType() ,validatorConfiguration.getReporter().getConfiguration());
+
+        LOGGER.info("Starting reporting service...");
+
+        reporter.start();
+
+        LOGGER.info("Reporting service started.");
+
+        new Validator( getTaskSupplier(), getResultConsumer(registry) ).start();
 
     }
 
-    private Consumer<ValidationTaskResult> getResultConsumer(){
-        return x -> System.out.println(x);
+    private MetricRegistry getMetricRegistry(){
+
+        MetricRegistry registry = new MetricRegistry();
+
+        registry.register(name("jvm", "gc"), new GarbageCollectorMetricSet());
+        registry.register(name("jvm", "threads"), new ThreadStatesGaugeSet());
+        registry.register(name("jvm", "classes"), new ClassLoadingGaugeSet());
+        registry.register(name("jvm", "fd"), new FileDescriptorRatioGauge());
+        registry.register(name("jvm", "memory"), new MemoryUsageGaugeSet());
+
+        return registry;
+
     }
 
-    private Consumer<Throwable> getErrorConsumer(){
-        return x -> System.out.println(x);
+    private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry){
+
+        return new ResultConsumer(registry);
+
     }
 
     private Supplier<ValidationTask> getTaskSupplier(){
@@ -121,7 +154,7 @@ public class Launcher {
         Map<String, DataPointerFactory> knownFactories = new HashMap<>();
 
         Map<String, List<ValidatorConfiguration.DataSource>> sources = StreamSupport.stream( validatorConfiguration.getDataSources().spliterator(), false )
-                .collect( Collectors.groupingBy( source -> source.getName() ) );
+                .collect( Collectors.groupingBy( source -> source.getType() ) );
 
         DataPointerFactory hbaseFactory = getHBaseFactory( sources.getOrDefault( HBASE, Collections.EMPTY_LIST ) );
 

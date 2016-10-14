@@ -22,15 +22,24 @@ public class ValidationTaskDescriptionDeserializer implements Deserializer<Valid
     public void configure(Map<String, ?> map, boolean b) {}
 
     @Override
-    public ValidationTaskDescription deserialize(String s, byte[] bytes) {
+    public ValidationTaskDescription deserialize(String id, byte[] bytes) {
+
         try {
-            return  mapper.readValue(bytes, ValidationTaskDescription.class);
+
+            ValidationTaskDescription task = mapper.readValue(bytes, ValidationTaskDescription.class);
+
+            task.setId( id );
+
+            return task;
+
         } catch (IOException e) {
 
             LOGGER.error("Error deserializing task description", e);
 
-            return null;
+            throw new RuntimeException(e);
+
         }
+
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.booking.validator.service;
+package com.booking.validator.service.utils;
 
 /**
  * Created by psalimov on 9/15/16.

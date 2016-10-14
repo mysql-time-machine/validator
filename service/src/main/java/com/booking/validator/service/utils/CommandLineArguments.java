@@ -10,10 +10,12 @@ public class CommandLineArguments {
     public CommandLineArguments(String... args){
 
         for (int i=0; i<args.length; i++){
-            if ("config".equals(args[i])){
+            if ("--config".equals(args[i])){
                 configurationPath = args[++i];
             }
         }
+
+        if (configurationPath == null || configurationPath.isEmpty()) throw new RuntimeException("--config file path is not provided");
 
     }
 

@@ -11,9 +11,15 @@ public class ValidationTaskDescription {
 
     private DataPointerDescription target;
 
+    private String id;
+
+    private String tag;
+
     public ValidationTaskDescription(){}
 
-    public ValidationTaskDescription(DataPointerDescription source, DataPointerDescription target) {
+    public ValidationTaskDescription(String tag, DataPointerDescription source, DataPointerDescription target) {
+
+        this.tag = tag;
 
         this.source = source;
 
@@ -29,6 +35,12 @@ public class ValidationTaskDescription {
         return target;
     }
 
+    public String getTag() { return tag; }
+
+    public String getId() { return id; }
+
+    public void setId(String id) { this.id = id; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -36,15 +48,17 @@ public class ValidationTaskDescription {
 
         ValidationTaskDescription that = (ValidationTaskDescription) o;
 
-        if (source != null ? !source.equals(that.source) : that.source != null) return false;
-        return target != null ? target.equals(that.target) : that.target == null;
+        if (!source.equals(that.source)) return false;
+        if (!target.equals(that.target)) return false;
+        return tag != null ? tag.equals(that.tag) : that.tag == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + (target != null ? target.hashCode() : 0);
+        int result = source.hashCode();
+        result = 31 * result + target.hashCode();
+        result = 31 * result + (tag != null ? tag.hashCode() : 0);
         return result;
     }
 }

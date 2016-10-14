@@ -55,9 +55,16 @@ public class ConcurrentPipelineTest {
                         };
 
                 },
-                x -> {counter.decrementAndGet(); System.out.println("Task completed: "+x);} ,
 
-                x -> {counter.decrementAndGet(); System.out.println("Task error: "+x);},
+                (x,t) -> {
+                    counter.decrementAndGet();
+
+                    if (t!= null){
+                        System.out.println("Task error: "+t);
+                    } else {
+                        System.out.println("Task completed: "+x);
+                    }
+                },
                 2);
 
         pipe.start();
@@ -67,6 +74,27 @@ public class ConcurrentPipelineTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+    }
+
+
+    @Test
+    public void test(){
+
+        final AtomicInteger taskCounter = new AtomicInteger();
+
+        Supplier<CompletableFuture<Integer>> supplier = ()->CompletableFuture.supplyAsync( taskCounter::incrementAndGet );
+
+
+
+        ConcurrentPipeline pipe = new ConcurrentPipeline(supplier, (x,t)->{}, 1);
+
+        pipe.start();
+
+
+        while (taskCounter.get()<1000000);
+
+
 
     }
 

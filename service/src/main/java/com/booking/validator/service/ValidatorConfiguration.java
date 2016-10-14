@@ -50,7 +50,23 @@ public class ValidatorConfiguration {
         }
     }
 
+    public static class Reporter {
+
+        private String type;
+        private Map<String,String> configuration;
+
+        public String getType() {
+            return type;
+        }
+
+        public Map<String, String> getConfiguration() {
+            return configuration;
+        }
+    }
+
     public static ValidatorConfiguration fromFile(String path) throws IOException {
+
+        if (path == null) throw new IllegalArgumentException("The path to file to is missing");
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
@@ -68,6 +84,9 @@ public class ValidatorConfiguration {
     @JsonProperty("task_supplier")
     private TaskSupplier taskSupplier;
 
+    @JsonProperty("reporter")
+    private Reporter reporter;
+
     public Iterable<DataSource> getDataSources() {
         return dataSources;
     }
@@ -75,4 +94,6 @@ public class ValidatorConfiguration {
     public TaskSupplier getTaskSupplier() {
         return taskSupplier;
     }
+
+    public Reporter getReporter() { return reporter; }
 }

@@ -1,11 +1,13 @@
 import com.booking.validator.data.constant.ConstDataPointerFactory;
 import com.booking.validator.data.DataPointerFactory;
 import com.booking.validator.service.DataPointers;
-import com.booking.validator.service.Service;
+import com.booking.validator.service.task.ValidationTaskResult;
+import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.Validator;
 import com.booking.validator.service.protocol.DataPointerDescription;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
-import com.booking.validator.service.task.TaskSupplier;
+import com.booking.validator.service.TaskSupplier;
+import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
 import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -111,7 +114,7 @@ public class FunctionalTest {
         DataPointerDescription source = new DataPointerDescription(constStorageDescription,constKeyDescription);
 
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(new ValidationTaskDescription(source,source));
+        return mapper.writeValueAsString(new ValidationTaskDescription(null,source,source));
 
     }
 
@@ -162,11 +165,11 @@ public class FunctionalTest {
 
     @Before
     public void prepare() throws Exception {
-        kafka = getKafkaServer();
-        kafka.startup();
+        //kafka = getKafkaServer();
+        //kafka.startup();
 
-        producer = getKafkaProducer();
-        producer.start();
+        //producer = getKafkaProducer();
+        //producer.start();
 
     }
 
@@ -176,13 +179,43 @@ public class FunctionalTest {
         if (producer != null) producer.stop();
     }
 
+    private BiConsumer<ValidationTaskResult, Throwable> getPrinter(){
+
+        return (x,t)-> {
+            if (t!=null) {
+                System.out.println(t);
+            } else {
+                System.out.println(x.isOk());
+            }
+        };
+
+    }
+
+    @Test
+    public void cliSupplierTest(){
+
+        Map<String, DataPointerFactory> factories = new HashMap<>();
+        factories.put( "const", new ConstDataPointerFactory() );
+
+        Validator validator = new Validator( new TaskSupplier(new CommandLineValidationTaskDescriptionSupplier(), new DataPointers( factories )), getPrinter());
+
+        validator.start();
+
+        try {
+            Thread.sleep(1000*60);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Test
     public void test(){
 
         Map<String, DataPointerFactory> factories = new HashMap<>();
         factories.put( "const", new ConstDataPointerFactory() );
 
-        Validator validator = new Validator( new TaskSupplier( getSupplier(), new DataPointers( factories )), x-> System.out.println(x.isOk()), System.out::println );
+        Validator validator = new Validator( new TaskSupplier( getSupplier(), new DataPointers( factories )), getPrinter() );
 
         validator.start();
 

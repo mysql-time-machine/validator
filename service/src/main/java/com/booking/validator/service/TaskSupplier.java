@@ -1,8 +1,9 @@
-package com.booking.validator.service.task;
+package com.booking.validator.service;
 
 import com.booking.validator.data.DataPointer;
 import com.booking.validator.service.DataPointers;
-import com.booking.validator.service.Service;
+import com.booking.validator.service.task.ValidationTask;
+import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
 
 import java.util.function.Supplier;
@@ -36,6 +37,6 @@ public class TaskSupplier implements Supplier<ValidationTask>, Service {
         DataPointer source = pointers.get(description.getSource());
         DataPointer target = pointers.get(description.getTarget());
 
-        return new ValidationTask(source,target);
+        return new ValidationTask(description.getId(),description.getTag(),source,target);
     }
 }

@@ -30,6 +30,14 @@
             <artifactId>hbase-client</artifactId>
             <version>1.2.2</version>
         </dependency>
+
+        <!-- Zookeeper client is needed for hbase client but is not defined as its dependency -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.9</version>
+        </dependency>
+
     </dependencies>
 
 </project>

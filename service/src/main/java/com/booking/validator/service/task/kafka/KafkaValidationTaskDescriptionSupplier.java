@@ -1,6 +1,6 @@
 package com.booking.validator.service.task.kafka;
 
-import com.booking.validator.service.Service;
+import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -9,7 +9,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;

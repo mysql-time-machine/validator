@@ -46,7 +46,7 @@ public class ValidationTaskDescriptionTest {
         constKeyDescription.put("value", "{ \"a\": 1, \"b\" : 2 }");
 
         DataPointerDescription source = new DataPointerDescription(constStorageDescription,constKeyDescription);
-        ValidationTaskDescription task = new ValidationTaskDescription(source,source);
+        ValidationTaskDescription task = new ValidationTaskDescription(null,source,source);
 
 
         String s = mapper.writeValueAsString(task);

@@ -11,9 +11,9 @@ import java.util.Map;
 public interface DataPointerFactory  {
 
     class InvalidDataPointerDescription extends RuntimeException {
-        public InvalidDataPointerDescription(String message){
-            super(message);
-        }
+
+        public InvalidDataPointerDescription(String message) { super(message);}
+
     }
 
     DataPointer produce(Map<String,String> storageDescription, Map<String,String> keyDescription) throws InvalidDataPointerDescription;

@@ -1,8 +1,7 @@
 package com.booking.validator.service.utils;
 
-import com.booking.validator.service.Service;
-
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -11,57 +10,50 @@ import java.util.function.Supplier;
  *
  * This class implements concurrent execution of the sequence:
  *
- * 1) fetch a task from the supplier
- * 2) execute the task, that is a supplier of a completable future representing its result
- * 3) feed the consumer with the task result or the errorConsumer with the processing error
+ * 1) fetch a task (that is a supplier of a completable future) from the supplier
+ * 2) execute the task
+ * 3) feed the consumer with the task result or with the error
  *
  * such a way that no more then the specified number of tasks are being processed simultaneously.
  *
- * The supplier, consumer and the errorConsumer must be thread safe.
+ * The supplier and consumer must be thread safe.
  */
 public class ConcurrentPipeline<T> implements Service {
 
     private final int concurrencyLimit;
     private final Supplier<? extends Supplier<CompletableFuture<T>>> supplier;
-    private final Consumer<T> consumer;
-    private final Consumer<Throwable> errorConsumer;
+    private final BiConsumer<T, Throwable> consumer;
 
     private volatile boolean run = false;
 
-    public ConcurrentPipeline(Supplier<? extends Supplier<CompletableFuture<T>>> supplier, Consumer<T> consumer, Consumer<Throwable> errorConsumer, int concurrencyLimit) {
+    public ConcurrentPipeline(Supplier<? extends Supplier<CompletableFuture<T>>> supplier, BiConsumer<T, Throwable> consumer, int concurrencyLimit) {
         this.supplier = supplier;
         this.consumer = consumer;
         this.concurrencyLimit = concurrencyLimit;
-        this.errorConsumer = errorConsumer;
     }
 
+    @Override
     public void start(){
 
         run = true;
 
-        for ( int i=0; i<concurrencyLimit; i++ ){
-            startTaskAsync();
-        }
+        for ( int i=0; i<concurrencyLimit; i++ ) startTaskAsync();
+
+    }
+
+    @Override
+    public void stop(){
+
+        run = false;
 
     }
 
     private void startTaskAsync(){
 
-        CompletableFuture.supplyAsync(supplier)
+        if (run) CompletableFuture.supplyAsync(supplier)
                 .thenCompose( Supplier::get )
-                .whenComplete( this::handleTaskCompletion );
+                .whenComplete( consumer.andThen( (x,t)->startTaskAsync() ) );
 
-    }
-
-    private void handleTaskCompletion(T result, Throwable throwable ) {
-
-        if (throwable != null){
-            errorConsumer.accept( throwable );
-        } else {
-            consumer.accept(result);
-        }
-
-        if (run) startTaskAsync();
     }
 
 }

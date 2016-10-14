@@ -8,16 +8,26 @@ import com.booking.validator.data.DataDiscrepancy;
 public class ValidationTaskResult {
 
     private final DataDiscrepancy dicrepancy;
+    private final ValidationTask task;
+    private final Throwable error;
 
-    public ValidationTaskResult(DataDiscrepancy dicrepancy) {
+    public ValidationTaskResult(ValidationTask task, DataDiscrepancy discrepancy, Throwable error) {
 
-        this.dicrepancy = dicrepancy;
+        this.task = task;
+        this.dicrepancy = discrepancy;
+        this.error = error;
 
     }
 
+    public String getId() { return task.getId(); }
+
+    public String getTag() { return task.getTag(); }
+
+    public Throwable getError() { return error; }
+
     public boolean isOk(){
 
-        return  dicrepancy == null;
+        return  error == null && dicrepancy == null;
 
     }
 }

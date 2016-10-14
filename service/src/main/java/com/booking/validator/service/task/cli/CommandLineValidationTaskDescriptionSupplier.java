@@ -4,6 +4,7 @@ import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Scanner;
 import java.util.function.Supplier;
 
@@ -13,13 +14,15 @@ import java.util.function.Supplier;
 public class CommandLineValidationTaskDescriptionSupplier implements Supplier<ValidationTaskDescription> {
 
     private ObjectMapper mapper = new ObjectMapper();
-    private Scanner scanner = new Scanner(System.in);
 
     @Override
-    public ValidationTaskDescription get() {
+    public synchronized ValidationTaskDescription get() {
 
         try {
-            return mapper.readValue( scanner.nextLine() , ValidationTaskDescription.class);
+
+            String input = System.console().readLine();
+
+            return mapper.readValue( input , ValidationTaskDescription.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
