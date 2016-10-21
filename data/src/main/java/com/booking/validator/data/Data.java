@@ -8,22 +8,42 @@ import java.util.Map;
  */
 public class Data {
 
-    public static DataDiscrepancy discrepancy(Data d0, Data d1){
+    public static class Discrepancy {
 
-        if ( d0 == null && d1 == null ) return null;
-        if ( d0 == null || d1 == null ) return new DataDiscrepancy();
+        private final Data expected;
+        private final Data actual;
 
-        return d0.rows.equals(d1.rows) ? null : new DataDiscrepancy();
+        private Discrepancy(Data source, Data target) {
+            this.expected = source;
+            this.actual = target;
+        }
+
+        @Override
+        public String toString(){
+
+            assert expected != null || actual != null;
+
+            if ( expected == null ) return "Expected no data";
+            if ( actual == null ) return "Expected data";
+
+            return String.format("Expected %s, actual %s", expected.row.toString(), actual.row.toString());
+        }
 
     }
 
-    private final Map<String,String> rows;
+    public static Discrepancy discrepancy(Data expected, Data actual){
 
-    public Data(Map<String,String> rows){
-        this.rows = new HashMap<>(rows);
+        if ( expected == null && actual == null ) return null;
+        if ( expected == null || actual == null ) return new Discrepancy(expected, actual);
+
+        return expected.row.equals(actual.row) ? null : new Discrepancy(expected, actual);
+
     }
 
+    private final Map<String,String> row;
 
-
+    public Data(Map<String,String> row){
+        this.row = new HashMap<>(row);
+    }
 
 }

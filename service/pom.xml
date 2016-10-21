@@ -60,6 +60,12 @@
             <version>0.0.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.booking.validator</groupId>
+            <artifactId>utils</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
         <!-- Kafka tasks supplier -->
 
         <dependency>

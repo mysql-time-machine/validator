@@ -12,6 +12,7 @@
     <modules>
         <module>service</module>
         <module>data</module>
+        <module>utils</module>
     </modules>
 
     <build>

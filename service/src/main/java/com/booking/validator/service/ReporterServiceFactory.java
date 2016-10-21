@@ -1,6 +1,6 @@
 package com.booking.validator.service;
 
-import com.booking.validator.service.utils.Service;
+import com.booking.validator.utils.Service;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReporterServiceFactory {
 
-    private static class ReporterService implements Service{
+    private static class ReporterService implements Service {
 
         private final ScheduledReporter reporter;
         private final long period;
@@ -37,7 +37,7 @@ public class ReporterServiceFactory {
 
     }
 
-    private enum Property implements com.booking.validator.service.utils.Property {
+    private enum Property implements com.booking.validator.utils.Property {
         HOST("host"), PORT("port"), NAMESPACE("namespace"), PERIOD("period");
 
         private final String name;

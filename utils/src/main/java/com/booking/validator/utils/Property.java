@@ -1,4 +1,4 @@
-package com.booking.validator.service.utils;
+package com.booking.validator.utils;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-import com.booking.validator.service.utils.ConcurrentPipeline;
+import com.booking.validator.utils.ConcurrentPipeline;
 import org.junit.Test;
 
 import java.util.Random;

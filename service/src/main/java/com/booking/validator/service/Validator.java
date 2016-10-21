@@ -2,13 +2,12 @@ package com.booking.validator.service;
 
 
 import com.booking.validator.service.task.ValidationTaskResult;
-import com.booking.validator.service.utils.ConcurrentPipeline;
-import com.booking.validator.service.utils.Service;
+import com.booking.validator.utils.ConcurrentPipeline;
+import com.booking.validator.utils.Service;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**

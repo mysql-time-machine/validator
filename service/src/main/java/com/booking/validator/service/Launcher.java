@@ -3,13 +3,13 @@ package com.booking.validator.service;
 import com.booking.validator.data.constant.ConstDataPointerFactory;
 import com.booking.validator.data.DataPointerFactory;
 import com.booking.validator.data.hbase.HBaseDataPointerFactory;
+import com.booking.validator.data.mysql.MysqlDataPointerFactory;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.booking.validator.service.task.*;
 import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
 import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
-import com.booking.validator.service.utils.CommandLineArguments;
-import com.booking.validator.service.utils.Service;
-import com.codahale.metrics.Counter;
+import com.booking.validator.utils.CommandLineArguments;
+import com.booking.validator.utils.Service;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +38,7 @@ public class Launcher {
     private static final String CONST = "const";
     private static final String MYSQL = "mysql";
     private static final String KAFKA = "kafka";
+    private static final String CONSOLE = "console";
 
     public static void main(String[] args) {
 
@@ -124,14 +125,19 @@ public class Launcher {
         ValidatorConfiguration.TaskSupplier supplierDescription = validatorConfiguration.getTaskSupplier();
 
         Supplier<ValidationTaskDescription> supplier;
+        String type = supplierDescription.getType();
 
-        if (KAFKA.equals( supplierDescription.getType() )){
+        if (KAFKA.equals(type)){
 
             supplier = getKafkaTaskDescriptionSupplier( supplierDescription.getConfiguration() );
 
-        } else {
+        } else if (CONSOLE.equals(type)) {
 
             supplier = new CommandLineValidationTaskDescriptionSupplier();
+
+        } else {
+
+            throw new RuntimeException("Unknown supplier type " + type);
 
         }
 
@@ -149,19 +155,27 @@ public class Launcher {
         return KafkaValidationTaskDescriptionSupplier.getInstance( topic , properties );
     }
 
-    private DataPointers getDataPointers(){
+    private DataPointerFactories getDataPointers(){
 
         Map<String, DataPointerFactory> knownFactories = new HashMap<>();
 
-        Map<String, List<ValidatorConfiguration.DataSource>> sources = StreamSupport.stream( validatorConfiguration.getDataSources().spliterator(), false )
+        Map<String, List<ValidatorConfiguration.DataSource>> sourcesByType = StreamSupport.stream( validatorConfiguration.getDataSources().spliterator(), false )
                 .collect( Collectors.groupingBy( source -> source.getType() ) );
 
-        DataPointerFactory hbaseFactory = getHBaseFactory( sources.getOrDefault( HBASE, Collections.EMPTY_LIST ) );
-
-        knownFactories.put(HBASE, hbaseFactory);
+        knownFactories.put(HBASE, getHBaseFactory( sourcesByType.getOrDefault( HBASE, Collections.EMPTY_LIST ) ));
+        knownFactories.put(MYSQL, getMysqlFactory( sourcesByType.getOrDefault( MYSQL, Collections.EMPTY_LIST ) ));
         knownFactories.put(CONST, new ConstDataPointerFactory());
 
-        return new DataPointers(knownFactories);
+        return new DataPointerFactories(knownFactories);
+    }
+
+    private DataPointerFactory getMysqlFactory( Iterable<ValidatorConfiguration.DataSource> sources ){
+
+        Map<String,Map<String,String>> configs = StreamSupport.stream( sources.spliterator(), false )
+                .collect(Collectors.toMap(s->s.getName(), s->s.getConfiguration()));
+
+        return MysqlDataPointerFactory.build(configs);
+
     }
 
     private DataPointerFactory getHBaseFactory( Iterable<ValidatorConfiguration.DataSource> sources ){
@@ -179,7 +193,7 @@ public class Launcher {
 
                         } ) );
 
-        return HBaseDataPointerFactory.getInstance(hbaseConfigurations);
+        return HBaseDataPointerFactory.build(hbaseConfigurations);
 
     }
 

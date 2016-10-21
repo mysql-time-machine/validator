@@ -36,7 +36,7 @@ public class ValidationTaskDescriptionDeserializer implements Deserializer<Valid
 
             LOGGER.error("Error deserializing task description", e);
 
-            throw new RuntimeException(e);
+            return null;
 
         }
 

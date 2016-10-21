@@ -3,10 +3,12 @@ package com.booking.validator.data.constant;
 import com.booking.validator.data.Data;
 import com.booking.validator.data.DataPointer;
 import com.booking.validator.data.DataPointerFactory;
-import org.apache.htrace.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
+import java.net.URI;
+
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by psalimov on 9/21/16.
@@ -24,27 +26,19 @@ public class ConstDataPointerFactory implements DataPointerFactory {
         }
 
         @Override
-        public Data get() {
+        public Data resolve() {
             return data;
         }
     }
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
     @Override
-    public DataPointer produce(Map<String, String> storageDescription, Map<String, String> keyDescription) throws InvalidDataPointerDescription {
+    public DataPointer produce(String uriString) throws InvalidDataPointerDescription {
 
-        try {
+        URI uri = URI.create(uriString);
 
-            Map<String,String> rows = mapper.readValue( keyDescription.get(VALUE_PROPERTY_NAME) , Map.class);
+        Map<String,String> rows = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toMap(s->s[0],s->s[1]));
 
-            return new ConstDataPointer(new Data(rows));
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(e);
-
-        }
+        return new ConstDataPointer(new Data(rows));
 
     }
 

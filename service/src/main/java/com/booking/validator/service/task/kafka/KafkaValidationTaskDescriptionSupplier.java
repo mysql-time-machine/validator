@@ -1,7 +1,7 @@
 package com.booking.validator.service.task.kafka;
 
-import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
+import com.booking.validator.utils.Service;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -30,6 +30,8 @@ public class KafkaValidationTaskDescriptionSupplier implements Supplier<Validati
     private final Object lock = new Object();
 
     public static KafkaValidationTaskDescriptionSupplier getInstance(String topic, Properties properties){
+
+        if (topic == null || topic.isEmpty()) throw new IllegalArgumentException("No topic is given for Kafka consumer");
 
         KafkaConsumer<String, ValidationTaskDescription> consumer = new KafkaConsumer<>( properties, new StringDeserializer(), new ValidationTaskDescriptionDeserializer() );
 

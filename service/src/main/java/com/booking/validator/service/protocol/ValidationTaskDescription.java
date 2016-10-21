@@ -1,15 +1,13 @@
 package com.booking.validator.service.protocol;
 
-import com.booking.validator.service.protocol.DataPointerDescription;
-
 /**
  * Created by psalimov on 9/5/16.
  */
 public class ValidationTaskDescription {
 
-    private DataPointerDescription source;
+    private String source;
 
-    private DataPointerDescription target;
+    private String target;
 
     private String id;
 
@@ -17,7 +15,7 @@ public class ValidationTaskDescription {
 
     public ValidationTaskDescription(){}
 
-    public ValidationTaskDescription(String tag, DataPointerDescription source, DataPointerDescription target) {
+    public ValidationTaskDescription(String tag, String source, String target) {
 
         this.tag = tag;
 
@@ -27,11 +25,11 @@ public class ValidationTaskDescription {
 
     }
 
-    public DataPointerDescription getSource() {
+    public String getSource() {
         return source;
     }
 
-    public DataPointerDescription getTarget() {
+    public String getTarget() {
         return target;
     }
 
@@ -41,24 +39,4 @@ public class ValidationTaskDescription {
 
     public void setId(String id) { this.id = id; }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ValidationTaskDescription that = (ValidationTaskDescription) o;
-
-        if (!source.equals(that.source)) return false;
-        if (!target.equals(that.target)) return false;
-        return tag != null ? tag.equals(that.tag) : that.tag == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = source.hashCode();
-        result = 31 * result + target.hashCode();
-        result = 31 * result + (tag != null ? tag.hashCode() : 0);
-        return result;
-    }
 }

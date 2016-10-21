@@ -1,10 +1,9 @@
 package com.booking.validator.service;
 
 import com.booking.validator.data.DataPointer;
-import com.booking.validator.service.DataPointers;
 import com.booking.validator.service.task.ValidationTask;
-import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
+import com.booking.validator.utils.Service;
 
 import java.util.function.Supplier;
 
@@ -15,11 +14,11 @@ public class TaskSupplier implements Supplier<ValidationTask>, Service {
 
 
     private final Supplier<ValidationTaskDescription> fetcher;
-    private final DataPointers pointers;
+    private final DataPointerFactories factory;
 
-    public TaskSupplier(Supplier<ValidationTaskDescription> fetcher, DataPointers pointers) {
+    public TaskSupplier(Supplier<ValidationTaskDescription> fetcher, DataPointerFactories factory) {
         this.fetcher = fetcher;
-        this.pointers = pointers;
+        this.factory = factory;
     }
 
     @Override
@@ -34,8 +33,8 @@ public class TaskSupplier implements Supplier<ValidationTask>, Service {
 
         ValidationTaskDescription description = fetcher.get();
 
-        DataPointer source = pointers.get(description.getSource());
-        DataPointer target = pointers.get(description.getTarget());
+        DataPointer source = factory.produce(description.getSource());
+        DataPointer target = factory.produce(description.getTarget());
 
         return new ValidationTask(description.getId(),description.getTag(),source,target);
     }

@@ -3,9 +3,6 @@ package com.booking.validator.data.hbase;
 
 import com.booking.validator.data.DataPointer;
 import com.booking.validator.data.DataPointerFactory;
-import com.booking.validator.data.storage.KeyValueStorageDataPointer;
-import com.booking.validator.data.hbase.storage.HBaseKey;
-import com.booking.validator.data.hbase.storage.HBaseKeyValueStorage;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
@@ -14,8 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by psalimov on 9/13/16.
@@ -24,27 +25,11 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HBaseDataPointerFactory.class);
 
-    private enum Property {
-        CLUSTER("cluster"), TABLE("table"), ROW("row"), COLUMN_FAMILY("cf");
-
-        private final String name;
-
-        Property(String name) { this.name = name; }
-
-        public String value(Map<String, String> values){
-
-            String value = values.get(name);
-
-            if (value == null) throw new InvalidDataPointerDescription("Property " + name + " is not defined");
-
-            return value;
-        }
-
-    }
+    private static final String HBASE = "hbase";
 
     private final Map<String, Connection> clusters;
 
-    public static HBaseDataPointerFactory getInstance(Map<String,Configuration> clusterConfigurations){
+    public static HBaseDataPointerFactory build(Map<String,Configuration> clusterConfigurations){
 
         Map<String, Connection> clusters = new HashMap<>();
 
@@ -64,7 +49,6 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
 
         }
 
-
         return new HBaseDataPointerFactory( clusters );
 
     }
@@ -73,18 +57,37 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
         this.clusters = clusters;
     }
 
-
     @Override
-    public DataPointer produce(Map<String, String> storageDescription, Map<String, String> keyDescription) {
+    public DataPointer produce(String uriString) throws InvalidDataPointerDescription {
 
-        Connection connection = clusters.get( Property.CLUSTER.value(storageDescription) );
+        URI uri = URI.create(uriString);
 
-        if (connection == null) throw new InvalidDataPointerDescription("Unknown cluster");
+        String sourceName = uri.getHost();
 
-        HBaseKeyValueStorage storage = new HBaseKeyValueStorage(connection, Property.TABLE.value(storageDescription) );
+        Connection connection = clusters.get(sourceName);
 
-        HBaseKey key = new HBaseKey(Bytes.toBytes( Property.ROW.value(keyDescription) ),Bytes.toBytes( Property.COLUMN_FAMILY.value(keyDescription) ));
+        if (connection == null) throw new RuntimeException("No such source");
 
-        return new KeyValueStorageDataPointer<>(storage,key);
+        String table = uri.getPath().split("/")[1];
+
+        List<String[]> args = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toList());
+
+        String row = null;
+        String cf = null;
+
+        for (String[] arg : args){
+
+            if ("row".equals(arg[0])) row = arg[1];
+            if ("cf".equals(arg[0])) cf = arg[1];
+
+        }
+
+        if (row == null) throw new RuntimeException("No row given");
+        if (cf == null) throw new RuntimeException("No cf given");
+
+
+        return new HbaseDataPointer(connection, table, Bytes.toBytes(row), Bytes.toBytes(cf));
+
     }
+
 }

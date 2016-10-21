@@ -1,34 +1,40 @@
-package com.booking.validator.data.hbase.storage;
+package com.booking.validator.data.hbase;
 
-import com.booking.validator.data.storage.KeyValueStorage;
+import com.booking.validator.data.Data;
+import com.booking.validator.data.DataPointer;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.util.NavigableMap;
+import java.util.stream.Collectors;
 
 /**
- * Created by psalimov on 9/8/16.
+ * Created by psalimov on 10/21/16.
  */
-public class HBaseKeyValueStorage implements KeyValueStorage<HBaseKey, HBaseValue> {
+public class HbaseDataPointer implements DataPointer {
 
     private final Connection connection;
     private final String tableName;
+    private final byte[] row;
+    private final byte[] family;
 
-    public HBaseKeyValueStorage(Connection connection, String tableName) {
+    public HbaseDataPointer(Connection connection, String tableName, byte[] row, byte[] family) {
         this.connection = connection;
         this.tableName = tableName;
+        this.row = row;
+        this.family = family;
     }
 
     @Override
-    public HBaseValue get(HBaseKey key) {
-
+    public Data resolve() {
         try ( Table table = connection.getTable(TableName.valueOf(tableName) ) ){
 
-            Get get = new Get( key.row() );
+            Get get = new Get( row );
 
             Result result = table.get(get);
 
@@ -36,11 +42,13 @@ public class HBaseKeyValueStorage implements KeyValueStorage<HBaseKey, HBaseValu
 
             // TODO: allow the key to specify the version (time)
 
-            if (key.family() != null){
+            if (family != null){
 
-                NavigableMap resultMap = result.getFamilyMap( key.family() );
+                NavigableMap<byte[],byte[]> familyMap = result.getFamilyMap( family );
 
-                return new HBaseValue(resultMap);
+                return new Data( familyMap.entrySet().stream().collect(
+                        Collectors.toMap(entry -> Bytes.toString( entry.getKey() ), entry -> Bytes.toString( entry.getValue() ) )
+                    ) );
 
             } else {
 
@@ -53,6 +61,8 @@ public class HBaseKeyValueStorage implements KeyValueStorage<HBaseKey, HBaseValu
             throw new RuntimeException(e);
 
         }
-
     }
+
+
+
 }

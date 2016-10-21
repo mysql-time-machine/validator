@@ -1,14 +1,13 @@
 import com.booking.validator.data.constant.ConstDataPointerFactory;
 import com.booking.validator.data.DataPointerFactory;
-import com.booking.validator.service.DataPointers;
+import com.booking.validator.service.DataPointerFactories;
 import com.booking.validator.service.task.ValidationTaskResult;
-import com.booking.validator.service.utils.Service;
 import com.booking.validator.service.Validator;
-import com.booking.validator.service.protocol.DataPointerDescription;
 import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.booking.validator.service.TaskSupplier;
 import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
 import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
+import com.booking.validator.utils.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kafka.server.KafkaConfig;
@@ -104,17 +103,8 @@ public class FunctionalTest {
 
     private String task() throws JsonProcessingException {
 
-        Map<String, String> constStorageDescription = new HashMap<>();
-        constStorageDescription.put("type", "const");
-
-
-        Map<String, String> constKeyDescription = new HashMap<>();
-        constKeyDescription.put("value", "{ \"a\": 1, \"b\" : 2 }");
-
-        DataPointerDescription source = new DataPointerDescription(constStorageDescription,constKeyDescription);
-
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(new ValidationTaskDescription(null,source,source));
+        return mapper.writeValueAsString(new ValidationTaskDescription(null,"const://value/?a=1&b=2","const://value/?a=1&b=2"));
 
     }
 
@@ -197,7 +187,7 @@ public class FunctionalTest {
         Map<String, DataPointerFactory> factories = new HashMap<>();
         factories.put( "const", new ConstDataPointerFactory() );
 
-        Validator validator = new Validator( new TaskSupplier(new CommandLineValidationTaskDescriptionSupplier(), new DataPointers( factories )), getPrinter());
+        Validator validator = new Validator( new TaskSupplier(new CommandLineValidationTaskDescriptionSupplier(), new DataPointerFactories( factories )), getPrinter());
 
         validator.start();
 
@@ -215,7 +205,7 @@ public class FunctionalTest {
         Map<String, DataPointerFactory> factories = new HashMap<>();
         factories.put( "const", new ConstDataPointerFactory() );
 
-        Validator validator = new Validator( new TaskSupplier( getSupplier(), new DataPointers( factories )), getPrinter() );
+        Validator validator = new Validator( new TaskSupplier( getSupplier(), new DataPointerFactories( factories )), getPrinter() );
 
         validator.start();
 

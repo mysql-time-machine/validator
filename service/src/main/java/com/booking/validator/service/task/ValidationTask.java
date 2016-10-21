@@ -25,9 +25,9 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
 
     public CompletableFuture<ValidationTaskResult> get(){
 
-        return CompletableFuture.supplyAsync( source )
+        return CompletableFuture.supplyAsync( source::resolve )
                 .thenCombineAsync(
-                        CompletableFuture.supplyAsync( target ), this::validate)
+                        CompletableFuture.supplyAsync( target::resolve ), this::validate)
                 .exceptionally( t -> new ValidationTaskResult(this, null, t) );
 
     }
