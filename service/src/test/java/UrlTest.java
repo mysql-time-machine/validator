@@ -1,6 +1,9 @@
+import org.jcodings.specific.UTF8Encoding;
 import org.junit.Test;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +31,28 @@ public class UrlTest {
 
 
         t.length();
+    }
+
+    @Test
+    public void another() throws Throwable{
+
+        //String s = URI.create("hbase://rescore/delta:rescore_b_hotelreservation_20161101?row=7758383d;2098035396&cf=d").toString();
+
+
+        String s = new URI("hbase","rescore","/delta:rescore_b_hotelreservation_20161101", "row="+URLEncoder.encode("7758383d;20 9й80?35396")+"&cf=d",null).toString();
+        URI u = new URI(s);
+
+
+        System.out.println(s);
+        System.out.println(u.getQuery());
+        System.out.println(u.getPath());
+
+        String q = u.getQuery();
+
+        String qp = URLDecoder.decode(q.split("&")[0].split("=")[1], "UTF-8");
+
+        System.out.println(qp);
+
     }
 
 

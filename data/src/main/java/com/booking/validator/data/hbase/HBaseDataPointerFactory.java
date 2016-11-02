@@ -11,7 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,10 +77,19 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
         String row = null;
         String cf = null;
 
-        for (String[] arg : args){
+        try {
 
-            if ("row".equals(arg[0])) row = arg[1];
-            if ("cf".equals(arg[0])) cf = arg[1];
+            for (String[] arg : args) {
+
+                if ("row".equals(arg[0])) row = URLDecoder.decode(arg[1], "UTF-8");
+                if ("cf".equals(arg[0])) cf = URLDecoder.decode(arg[1], "UTF-8");
+
+            }
+        } catch (UnsupportedEncodingException e) {
+
+            LOGGER.error("UTF-8 not supported?", e);
+
+            throw new RuntimeException(e);
 
         }
 
@@ -86,7 +97,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
         if (cf == null) throw new RuntimeException("No cf given");
 
 
-        return new HbaseDataPointer(connection, table, Bytes.toBytes(row), Bytes.toBytes(cf));
+        return new HbaseDataPointer(connection, table, Bytes.toBytesBinary(row), Bytes.toBytes(cf));
 
     }
 

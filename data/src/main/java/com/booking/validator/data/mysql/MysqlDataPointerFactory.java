@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -72,6 +74,15 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
 
     }
 
+    private String decodeQueryToken(String encoded){
+        try {
+            return URLDecoder.decode(encoded,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error("UTF-8 not supported?", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public DataPointer produce(String uriString) {
 
         URI uri = URI.create(uriString);
@@ -86,7 +97,15 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
 
         List<String[]> args = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toList());
 
-        return new MysqlDataPointer(source, buildSelectQuery(table, args.stream().map(s->s[0]).collect(Collectors.toList()),getQuote(sourceName)), args.stream().map(s->s[1]).collect(Collectors.toList()) );
+        return new MysqlDataPointer(
+                source,
+                buildSelectQuery(
+                        table,
+                        args.stream().map(s -> decodeQueryToken(s[0])).collect(Collectors.toList()),
+                        getQuote(sourceName)
+                    ),
+                args.stream().map(s -> decodeQueryToken(s[1])).collect(Collectors.toList())
+            );
 
     }
 
