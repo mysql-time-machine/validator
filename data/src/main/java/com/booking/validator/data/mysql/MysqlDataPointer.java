@@ -9,6 +9,8 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 /**
@@ -16,17 +18,37 @@ import java.util.Map;
  */
 public class MysqlDataPointer implements DataPointer {
 
+    public static class Cell{
+        private final String type;
+        private final Object value;
+
+        public Cell(String type, Object value) {
+            this.type = type;
+            this.value = value;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MysqlDataPointer.class);
 
     private final DataSource source;
 
     private final String query;
     private final Iterable<Object> args;
+    private final Transformation transformation;
 
-    public MysqlDataPointer(DataSource source, String query,Iterable<Object> args) {
+    public MysqlDataPointer(DataSource source, String query, Iterable<Object> args, Transformation transformation) {
         this.source = source;
         this.query = query;
         this.args = args;
+        this.transformation = transformation;
     }
 
     @Override
@@ -38,21 +60,23 @@ public class MysqlDataPointer implements DataPointer {
             int i = 1;
             for (Object arg : args) statement.setObject(i++,arg);
 
-            ResultSet result = statement.executeQuery(); // will be closed on statement closing
+            ResultSet rows = statement.executeQuery(); // will be closed on statement closing
 
-            if (!result.next()) return null;
+            if (!rows.next()) return null;
 
-            if (!result.isLast()) throw new RuntimeException("An ambiguous data pointer to mysql source {}, the query {}");
+            if (!rows.isLast()) throw new RuntimeException("An ambiguous data pointer to mysql source {}, the query {}");
 
-            ResultSetMetaData meta = result.getMetaData();
+            ResultSetMetaData meta = rows.getMetaData();
 
             int columnCount = meta.getColumnCount();
 
-            Map<String,String> data = new HashMap<>();
+            Map<String, Cell> cells = new HashMap<>();
 
-            for (i = 1; i <= columnCount; i++) data.put(meta.getColumnName(i),result.getString(i));
+            for (i = 1; i <= columnCount; i++) cells.put(meta.getColumnName(i),new Cell(meta.getColumnTypeName(i),rows.getObject(i)));
 
-            return new Data(data);
+            Map<String,String> transformedCells = transformation.transform(cells);
+
+            return transformedCells == null ? null : new Data(transformedCells);
 
         } catch (SQLException e) {
 

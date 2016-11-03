@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,6 +61,51 @@ public class ValidatorConfigurationTest {
         @JsonDeserialize
         public EntitySection section;
     }
+
+    private static class Prop{
+
+        public static class PropSection{
+            public String name;
+            public Map<String, Object> props;
+        }
+
+
+        public PropSection[] props;
+
+    }
+
+    @Test
+    public void desealizeNestedMapsExperiment() throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Prop p = new Prop();
+        p.props = new Prop.PropSection[2];
+
+        p.props[0] = new Prop.PropSection();
+        p.props[0].name = "prop1";
+        p.props[0].props = new HashMap<>();
+        p.props[0].props.put("a","0");
+
+        Map<String,Object> b = new HashMap<>();
+        p.props[0].props.put("b", b );
+        b.put("ba",1);
+        b.put("bb",2);
+        b.put("bbb",new int[4]);
+
+        Map<String,Object> c = new HashMap<>();
+        p.props[1]= new Prop.PropSection();
+        p.props[0].name = "prop2";
+
+        String s = mapper.writeValueAsString(p);
+        System.out.println(s);
+
+        Prop p2 = mapper.readValue(s, Prop.class);
+
+        assertEquals(p.props[0].props, p2.props[0].props);
+
+    }
+
 
     @Test
     public void deserializeMissingTest() throws IOException {

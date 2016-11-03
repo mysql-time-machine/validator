@@ -33,8 +33,8 @@ public class TaskSupplier implements Supplier<ValidationTask>, Service {
 
         ValidationTaskDescription description = fetcher.get();
 
-        DataPointer source = factory.produce(description.getSource());
-        DataPointer target = factory.produce(description.getTarget());
+        DataPointer source = factory.produce(description.getSource(), description.getSourceTransformation());
+        DataPointer target = factory.produce(description.getTarget(), description.getTargetTransformation());
 
         return new ValidationTask(description.getId(),description.getTag(),source,target);
     }

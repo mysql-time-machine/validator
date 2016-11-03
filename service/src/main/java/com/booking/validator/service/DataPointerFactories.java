@@ -23,7 +23,7 @@ public class DataPointerFactories {
         this.factories = factories;
     }
 
-    public DataPointer produce(String pointer){
+    public DataPointer produce(String pointer, Map<String,Object> transformation){
 
         URI uri = URI.create(pointer);
 
@@ -33,7 +33,7 @@ public class DataPointerFactories {
 
         if (factory == null) throw new RuntimeException("No factory given for a data pointer of the type " + type);
 
-        return factory.produce(pointer);
+        return factory.produce(pointer, transformation);
 
     }
 

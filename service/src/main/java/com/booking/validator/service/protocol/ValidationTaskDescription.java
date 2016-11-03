@@ -1,5 +1,9 @@
 package com.booking.validator.service.protocol;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+
 /**
  * Created by psalimov on 9/5/16.
  */
@@ -12,6 +16,12 @@ public class ValidationTaskDescription {
     private String id;
 
     private String tag;
+
+    @JsonProperty("source_transformation")
+    private Map<String,Object> sourceTransformation;
+
+    @JsonProperty("target_transformation")
+    private Map<String,Object> targetTransformation;
 
     public ValidationTaskDescription(){}
 
@@ -39,4 +49,11 @@ public class ValidationTaskDescription {
 
     public void setId(String id) { this.id = id; }
 
+    public Map<String, Object> getTargetTransformation() {
+        return targetTransformation;
+    }
+
+    public Map<String, Object> getSourceTransformation() {
+        return sourceTransformation;
+    }
 }

@@ -1,6 +1,6 @@
 package com.booking.validator.data;
 
-import java.net.URL;
+import java.util.Map;
 
 /**
  * Created by psalimov on 9/15/16.
@@ -13,6 +13,6 @@ public interface DataPointerFactory  {
 
     }
 
-    DataPointer produce(String uri) throws InvalidDataPointerDescription;
+    DataPointer produce(String uri, Map<String, Object> transformations) throws InvalidDataPointerDescription;
 
 }

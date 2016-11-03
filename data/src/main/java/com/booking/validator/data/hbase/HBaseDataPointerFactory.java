@@ -60,7 +60,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
     }
 
     @Override
-    public DataPointer produce(String uriString) throws InvalidDataPointerDescription {
+    public DataPointer produce(String uriString, Map<String, Object> transformations) throws InvalidDataPointerDescription {
 
         URI uri = URI.create(uriString);
 
@@ -97,7 +97,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
         if (cf == null) throw new RuntimeException("No cf given");
 
 
-        return new HbaseDataPointer(connection, table, Bytes.toBytesBinary(row), Bytes.toBytes(cf));
+        return new HbaseDataPointer(connection, table, Bytes.toBytesBinary(row), Bytes.toBytes(cf), new Transformation(transformations));
 
     }
 

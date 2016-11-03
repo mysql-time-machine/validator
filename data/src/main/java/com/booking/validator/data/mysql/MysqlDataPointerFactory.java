@@ -83,7 +83,7 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
         }
     }
 
-    public DataPointer produce(String uriString) {
+    public DataPointer produce(String uriString, Map<String, Object> transformations) {
 
         URI uri = URI.create(uriString);
 
@@ -104,7 +104,8 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
                         args.stream().map(s -> decodeQueryToken(s[0])).collect(Collectors.toList()),
                         getQuote(sourceName)
                     ),
-                args.stream().map(s -> decodeQueryToken(s[1])).collect(Collectors.toList())
+                args.stream().map(s -> decodeQueryToken(s[1])).collect(Collectors.toList()),
+                new Transformation(transformations)
             );
 
     }

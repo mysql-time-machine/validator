@@ -43,6 +43,9 @@ public class Data {
     private final Map<String,String> row;
 
     public Data(Map<String,String> row){
+
+        if (row == null) throw new IllegalArgumentException();
+
         this.row = new HashMap<>(row);
     }
 
