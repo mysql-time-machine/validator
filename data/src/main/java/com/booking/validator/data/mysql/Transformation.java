@@ -1,7 +1,11 @@
 package com.booking.validator.data.mysql;
 
+import com.booking.validator.data.Data;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -10,9 +14,9 @@ import java.util.*;
  */
 public class Transformation {
 
-    private static String NULL_MAPPING_PROPERTY_NAME = "map_null";
-    private static String IGNORE_COLUMNS_PROPERTY_NAME = "ignore_columns";
-    private static String MAP_TIMESTAMP_TO_EPOCH_PROPERTY_NAME = "convert_timestamps_to_epoch";
+    private static final String NULL_MAPPING_PROPERTY_NAME = "map_null";
+    private static final String IGNORE_COLUMNS_PROPERTY_NAME = "ignore_columns";
+    private static final String MAP_TIMESTAMP_TO_EPOCH_PROPERTY_NAME = "convert_timestamps_to_epoch";
 
     private final String nullValue;
     private final boolean convertTimestampsToEpoch;
@@ -36,54 +40,54 @@ public class Transformation {
 
     }
 
-    public Map<String,String> transform(Map<String, MysqlDataPointer.Cell> cells){
+    public Data transform(ResultSet row) throws SQLException{
+
+        ResultSetMetaData meta = row.getMetaData();
+
+        int columnCount = meta.getColumnCount();
 
         Map<String,String> result = new HashMap<>();
 
-        for (Map.Entry<String,MysqlDataPointer.Cell> entry : cells.entrySet()){
+        for (int columnIndex=1; columnIndex <= columnCount; columnIndex++){
 
-            String column = entry.getKey();
+            String column = meta.getColumnName(columnIndex);
 
             if (ignoredColumns.contains(column)) continue;
 
-            Object valueRaw = entry.getValue().getValue();
+            String value;
 
-            String value = nullValue;
+            String type = meta.getColumnTypeName(columnIndex);
 
-            if (valueRaw != null){
+            switch (type){
 
-                String type = entry.getValue().getType();
+                case "DATETIME":
 
-                switch (type){
+                case "TIMESTAMP":
 
-                    case "DATETIME":
+                    if (convertTimestampsToEpoch) {
 
-                    case "TIMESTAMP":
+                        Timestamp t = row.getTimestamp(columnIndex);
 
-                        if (convertTimestampsToEpoch) {
-
-                            Timestamp t = (Timestamp) valueRaw;
-
-                            value = String.valueOf(t.getTime());
-
-                            break;
-
-                        }
-
-                    default:
-
-                        value = valueRaw.toString();
+                        value = t == null ? null : String.valueOf(t.getTime());
 
                         break;
-                }
 
+                    }
+
+                default:
+
+                    value = row.getString(columnIndex);
+
+                    break;
             }
+
+            if (value == null) value = nullValue;
 
             result.put(column,value);
 
         }
 
-        return result;
+        return new Data(result);
 
     }
 

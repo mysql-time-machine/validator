@@ -18,24 +18,6 @@ import java.util.stream.IntStream;
  */
 public class MysqlDataPointer implements DataPointer {
 
-    public static class Cell{
-        private final String type;
-        private final Object value;
-
-        public Cell(String type, Object value) {
-            this.type = type;
-            this.value = value;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public Object getValue() {
-            return value;
-        }
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MysqlDataPointer.class);
 
     private final DataSource source;
@@ -60,23 +42,13 @@ public class MysqlDataPointer implements DataPointer {
             int i = 1;
             for (Object arg : args) statement.setObject(i++,arg);
 
-            ResultSet rows = statement.executeQuery(); // will be closed on statement closing
+            ResultSet row = statement.executeQuery(); // will be closed on statement closing
 
-            if (!rows.next()) return null;
+            if (!row.next()) return null;
 
-            if (!rows.isLast()) throw new RuntimeException("An ambiguous data pointer to mysql source {}, the query {}");
+            if (!row.isLast()) throw new RuntimeException("An ambiguous data pointer to mysql source {}, the query {}");
 
-            ResultSetMetaData meta = rows.getMetaData();
-
-            int columnCount = meta.getColumnCount();
-
-            Map<String, Cell> cells = new HashMap<>();
-
-            for (i = 1; i <= columnCount; i++) cells.put(meta.getColumnName(i),new Cell(meta.getColumnTypeName(i),rows.getObject(i)));
-
-            Map<String,String> transformedCells = transformation.transform(cells);
-
-            return transformedCells == null ? null : new Data(transformedCells);
+            return transformation.transform(row);
 
         } catch (SQLException e) {
 

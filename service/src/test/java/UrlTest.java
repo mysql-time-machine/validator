@@ -1,11 +1,14 @@
+import com.mysql.cj.jdbc.io.JdbcTimestampValueFactory;
 import org.jcodings.specific.UTF8Encoding;
 import org.junit.Test;
 
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,5 +78,26 @@ public class UrlTest {
 
     }
 
+
+    @Test
+    public void Timestamp(){
+
+        JdbcTimestampValueFactory f = new JdbcTimestampValueFactory(TimeZone.getTimeZone("Europe/Amsterdam"));
+
+        Timestamp t = f.createFromTimestamp(2016,10,10,14,04,18,0);
+
+        System.out.println(t.getTime());
+
+        System.out.println(t.toString());
+
+        f = new JdbcTimestampValueFactory(TimeZone.getTimeZone("GMT"));
+
+        t = f.createFromTimestamp(2016,10,10,14,04,18,0);
+
+        System.out.println(t.getTime());
+
+        System.out.println(t.toString());
+
+    }
 
 }

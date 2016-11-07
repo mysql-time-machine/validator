@@ -57,6 +57,7 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
             source.addConnectionProperty("useUnicode", "true");
             source.addConnectionProperty("characterEncoding", "UTF-8");
             source.addConnectionProperty("zeroDateTimeBehavior", "convertToNull");
+            source.addConnectionProperty("serverTimezone","Europe/Amsterdam");
 
             sources.put(property.getKey(), source);
 

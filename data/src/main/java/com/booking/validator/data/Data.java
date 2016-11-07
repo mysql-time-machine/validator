@@ -1,7 +1,8 @@
 package com.booking.validator.data;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by psalimov on 9/5/16.
@@ -26,8 +27,41 @@ public class Data {
             if ( expected == null ) return "Expected no data";
             if ( actual == null ) return "Expected data";
 
-            return String.format("Expected %s, actual %s", expected.row.toString(), actual.row.toString());
+            Set<String> keys = new HashSet<>(expected.row.keySet());
+            keys.addAll(actual.row.keySet());
+
+            String difference = keys.stream().map( k -> columnDiff(k, expected.row, actual.row) ).filter(Objects::nonNull).collect(Collectors.joining(", "));
+
+            return String.format("Expected values differs from actual: %s",difference);
         }
+
+    }
+
+    private static String columnDiff(String column, Map<String,String> expectedRow, Map<String,String> actualRow){
+
+        String expected = null;
+        String actual = null;
+
+        boolean columnExpected = expectedRow.containsKey(column);
+        boolean columnPresents = actualRow.containsKey(column);
+
+        if (columnExpected && columnPresents){
+
+            expected = "\"" + expectedRow.get(column) + "\"";
+            actual = "\"" + actualRow.get(column) + "\"";
+
+            if ( Objects.equals(expected, actual) ) return null;
+
+        } else {
+
+            if (!columnExpected) expected = "MISSING";
+
+            if (!columnPresents) actual = "MISSING";
+
+        }
+
+
+        return String.format("%s=[%s,%s]", column, expected, actual);
 
     }
 
