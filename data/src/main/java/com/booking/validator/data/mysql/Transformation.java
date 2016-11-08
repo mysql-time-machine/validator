@@ -3,11 +3,9 @@ package com.booking.validator.data.mysql;
 import com.booking.validator.data.Data;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Created by psalimov on 11/3/16.
@@ -60,19 +58,50 @@ public class Transformation {
 
             switch (type){
 
+
+                case "TIME":
+
+                case "DATE":
+
+                    // we rely on jdbc zeroDateTimeBehavior=convertToNull to filter out timestamps that are composed entirely of zeros
+
+                    value = (row.getObject(columnIndex) == null ? null : row.getString(columnIndex));
+
+                    break;
+
                 case "DATETIME":
 
                 case "TIMESTAMP":
 
-                    if (convertTimestampsToEpoch) {
+                    // we rely on jdbc zeroDateTimeBehavior=convertToNull to filter out timestamps that are composed entirely of zeros
 
-                        Timestamp t = row.getTimestamp(columnIndex);
+                    Timestamp t = row.getTimestamp(columnIndex);
 
-                        value = t == null ? null : String.valueOf(t.getTime());
+                    if (t == null){
 
-                        break;
+                        value = null;
+
+                    } else if (convertTimestampsToEpoch) {
+
+                        value = String.valueOf(t.getTime());
+
+                    } else {
+
+                        value = row.getString(columnIndex);
 
                     }
+
+                    break;
+
+                case "YEAR":
+
+                    // TODO: in view of jdbc default yearIsDateType=true consider handling year as a date
+
+                    value = row.getString(columnIndex);
+
+                    if ("0000".equals(value)) value = null;
+
+                    break;
 
                 default:
 
