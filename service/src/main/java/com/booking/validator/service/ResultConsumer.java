@@ -44,7 +44,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
             if ( error != null ){
 
-                LOGGER.error("Error processing the task {} tagged {}", id, tag, error);
+                LOGGER.error("Error processing the task {}", result.getTask(), error);
 
                 registry.counter(name("tasks", tag, "failed")).inc();
 
@@ -58,7 +58,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
                 } else {
 
-                    LOGGER.warn("Task {} tagged {} is processed successfully, the result is negative: {}", id, tag, result.getDicrepancy());
+                    LOGGER.warn("Task {} result is negative: {}", result.getTask(), result.getDicrepancy());
 
                     registry.counter(name("tasks", tag, "negative")).inc();
 

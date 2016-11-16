@@ -28,4 +28,8 @@ public class ValidationTaskResult {
     public boolean isOk(){ return  error == null && dicrepancy == null; }
 
     public Data.Discrepancy getDicrepancy(){ return dicrepancy; }
+
+    public ValidationTask getTask(){
+        return task;
+    }
 }

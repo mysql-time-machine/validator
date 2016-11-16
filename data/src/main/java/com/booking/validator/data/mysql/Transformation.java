@@ -2,15 +2,20 @@ package com.booking.validator.data.mysql;
 
 import com.booking.validator.data.Data;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * Created by psalimov on 11/3/16.
  */
 public class Transformation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Transformation.class);
 
     private static final String NULL_MAPPING_PROPERTY_NAME = "map_null";
     private static final String IGNORE_COLUMNS_PROPERTY_NAME = "ignore_columns";
@@ -38,74 +43,50 @@ public class Transformation {
 
     }
 
-    public Data transform(ResultSet row) throws SQLException{
+    public Data transform(MysqlCell[] cells) throws SQLException{
 
-        ResultSetMetaData meta = row.getMetaData();
-
-        int columnCount = meta.getColumnCount();
 
         Map<String,String> result = new HashMap<>();
 
-        for (int columnIndex=1; columnIndex <= columnCount; columnIndex++){
+        for (MysqlCell cell : cells){
 
-            String column = meta.getColumnName(columnIndex);
+            String column = cell.getColumn();
 
             if (ignoredColumns.contains(column)) continue;
 
-            String value;
+            Object rawValue = cell.getValue();
 
-            String type = meta.getColumnTypeName(columnIndex);
+            String value = null;
+
+            String type = cell.getType();
 
             switch (type){
-
-
-                case "TIME":
-
-                case "DATE":
-
-                    // we rely on jdbc zeroDateTimeBehavior=convertToNull to filter out timestamps that are composed entirely of zeros
-
-                    value = (row.getObject(columnIndex) == null ? null : row.getString(columnIndex));
-
-                    break;
 
                 case "DATETIME":
 
                 case "TIMESTAMP":
 
-                    // we rely on jdbc zeroDateTimeBehavior=convertToNull to filter out timestamps that are composed entirely of zeros
+                    if (rawValue != null){
 
-                    Timestamp t = row.getTimestamp(columnIndex);
+                        Timestamp t = (Timestamp) rawValue;
 
-                    if (t == null){
+                        if (convertTimestampsToEpoch) {
 
-                        value = null;
+                            value = String.valueOf(t.getTime());
 
-                    } else if (convertTimestampsToEpoch) {
+                        } else {
 
-                        value = String.valueOf(t.getTime());
+                            value = t.toString();
 
-                    } else {
-
-                        value = row.getString(columnIndex);
+                        }
 
                     }
 
                     break;
 
-                case "YEAR":
-
-                    // TODO: in view of jdbc default yearIsDateType=true consider handling year as a date
-
-                    value = row.getString(columnIndex);
-
-                    if ("0000".equals(value)) value = null;
-
-                    break;
-
                 default:
 
-                    value = row.getString(columnIndex);
+                    value = (rawValue == null ? null : rawValue.toString());
 
                     break;
             }

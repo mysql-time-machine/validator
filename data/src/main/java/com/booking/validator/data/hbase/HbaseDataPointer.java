@@ -20,13 +20,15 @@ public class HbaseDataPointer implements DataPointer {
     private final byte[] row;
     private final byte[] family;
     private final Transformation transformation;
+    private final String uri;
 
-    public HbaseDataPointer(Connection connection, String tableName, byte[] row, byte[] family, Transformation transformation) {
+    public HbaseDataPointer(Connection connection, String tableName, byte[] row, byte[] family, Transformation transformation, String uri) {
         this.connection = connection;
         this.tableName = tableName;
         this.row = row;
         this.family = family;
         this.transformation = transformation;
+        this.uri = uri;
     }
 
     @Override
@@ -52,6 +54,8 @@ public class HbaseDataPointer implements DataPointer {
 
     }
 
-
+    public String toString(){
+        return uri;
+    }
 
 }

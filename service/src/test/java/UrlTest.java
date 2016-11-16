@@ -1,3 +1,4 @@
+import com.booking.validator.data.Data;
 import com.mysql.cj.jdbc.io.JdbcTimestampValueFactory;
 import org.jcodings.specific.UTF8Encoding;
 import org.junit.Test;
@@ -5,8 +6,10 @@ import org.junit.Test;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -78,6 +81,15 @@ public class UrlTest {
 
     }
 
+    @Test
+    public void format(){
+
+        String s = String.format("%s%%s%s %s",0,0, "g");
+
+        assertEquals("0%s0 g", s);
+
+    }
+
 
     @Test
     public void Timestamp(){
@@ -97,6 +109,43 @@ public class UrlTest {
         System.out.println(t.getTime());
 
         System.out.println(t.toString());
+
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        cal.clear();
+        cal.set(0, - 1, 0);
+
+        Date date = new Date(cal.getTimeInMillis());
+
+
+        System.out.println(date.toString());
+
+        System.out.println(date.getTime());
+
+        cal = Calendar.getInstance();
+        cal.clear();
+        cal.set(0, - 1, 0);
+
+        date = new Date(cal.getTimeInMillis());
+
+
+        System.out.println(date.toString());
+
+        System.out.println(date.getTime());
+    }
+
+    @Test
+    public void anotherTimeTest(){
+
+
+        Calendar c = Calendar.getInstance();
+
+        c.clear();
+
+        c.set(2017,04,15);
+
+        Date d = new Date(c.getTimeInMillis());
+
+        System.out.println(d.toString());
 
     }
 

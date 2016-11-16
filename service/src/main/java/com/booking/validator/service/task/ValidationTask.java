@@ -2,6 +2,7 @@ package com.booking.validator.service.task;
 
 import com.booking.validator.data.Data;
 import com.booking.validator.data.DataPointer;
+import com.booking.validator.service.protocol.ValidationTaskDescription;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -39,6 +40,12 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
     protected ValidationTaskResult validate(Data sourceData, Data targetData ){
 
         return new ValidationTaskResult(this, Data.discrepancy(sourceData, targetData), null);
+
+    }
+
+    public String toString(){
+
+        return String.format("[Task id=%s tag=%s source=%s target=%s]", id, tag, source, target);
 
     }
 

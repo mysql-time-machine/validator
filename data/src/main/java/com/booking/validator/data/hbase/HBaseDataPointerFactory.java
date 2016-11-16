@@ -97,7 +97,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
         if (cf == null) throw new RuntimeException("No cf given");
 
 
-        return new HbaseDataPointer(connection, table, Bytes.toBytesBinary(row), Bytes.toBytes(cf), new Transformation(transformations));
+        return new HbaseDataPointer(connection, table, Bytes.toBytesBinary(row), Bytes.toBytes(cf), new Transformation(transformations),uriString);
 
     }
 

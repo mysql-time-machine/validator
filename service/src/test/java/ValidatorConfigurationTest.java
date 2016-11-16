@@ -1,4 +1,5 @@
 import com.booking.validator.service.ValidatorConfiguration;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -6,6 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -124,6 +126,7 @@ public class ValidatorConfigurationTest {
 
     private static final class A{
         private final String a;
+        @JsonProperty("b")
         private final String b;
 
         private A(){
@@ -131,13 +134,6 @@ public class ValidatorConfigurationTest {
             b = "b";
         }
 
-        public String getA() {
-            return a;
-        }
-
-        public String getB() {
-            return b;
-        }
     }
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -201,6 +197,60 @@ public class ValidatorConfigurationTest {
 
         return currentTime - lastRegistrationTime > throttlingInterval;
 
+    }
+
+    @Test
+    public void floatTest(){
+
+        String s ="0.018626829609274864000000000000";
+
+        BigDecimal d = new BigDecimal(s);
+
+        System.out.println(d.toString());
+
+
+        float f = Float.valueOf(s+"f");
+
+        System.out.println(String.format("%.32f",f));
+
+
+        int i = Float.floatToIntBits(f);
+
+
+        i += 1;
+
+        float f2 = Float.intBitsToFloat(i);
+
+        System.out.println(String.format("%.32f",f2));
+
+        i -= 2;
+
+        float f3 = Float.intBitsToFloat(i);
+
+        System.out.println(String.format("%.32f",f3));
+    }
+
+    @Test
+    public void doubleTest(){
+        double d1 = Double.valueOf("505502.279999999970000000000000000000");
+
+        System.out.println(new BigDecimal(d1));
+
+        long l1 = Double.doubleToLongBits(d1);
+
+        double d2 = Double.valueOf("505502.28");
+        System.out.println(new BigDecimal(d2));
+
+        long l2 = Double.doubleToLongBits(d2);
+
+        double d3 = Double.longBitsToDouble(l1+1);
+
+        double d4 = Double.longBitsToDouble(l2-1);
+
+        System.out.println(d3);
+        System.out.println(d4);
+
+        assertEquals(d1,d2);
     }
 
 }

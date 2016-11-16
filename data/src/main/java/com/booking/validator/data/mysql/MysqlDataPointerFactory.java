@@ -58,6 +58,7 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
             source.addConnectionProperty("characterEncoding", "UTF-8");
             source.addConnectionProperty("zeroDateTimeBehavior", "convertToNull");
             source.addConnectionProperty("serverTimezone","Europe/Amsterdam");
+            source.addConnectionProperty("yearIsDateType","false");
 
             sources.put(property.getKey(), source);
 
@@ -98,24 +99,47 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
 
         List<String[]> args = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toList());
 
-        return new MysqlDataPointer(
-                source,
-                buildSelectQuery(
-                        table,
-                        args.stream().map(s -> decodeQueryToken(s[0])).collect(Collectors.toList()),
-                        getQuote(sourceName)
-                    ),
-                args.stream().map(s -> decodeQueryToken(s[1])).collect(Collectors.toList()),
-                new Transformation(transformations)
-            );
+        List<String> columns = args.stream().map(s -> decodeQueryToken(s[0])).collect(Collectors.toList());
+
+        List<Object> values = args.stream().map(s -> decodeQueryToken(s[1])).collect(Collectors.toList());
+
+        String quote = getQuote(sourceName);
+
+        String condition = buildQueryConditionPart(columns, quote);
+
+        return new MysqlDataPointer(source, buildSelectAllQuery(table, condition), buildSelectDoubleColumnQuery(table, condition, quote), values, new Transformation(transformations),uriString);
+    }
+
+    private String buildSelectDoubleColumnQuery(String table, String condition, String quote){
+
+        // this is to fetch float or double values having enough amount of decimal digits
+        // IEEE 754 states that up to 17 significant digits may be required to preserve precision
+        // in double->string->double conversion
+
+        // NOTE: there is a bug in mysql rounding function so its second argument also messes up the result sometimes
+        // bad values for the second argument:
+        // 31 160.0
+        // 32 505502.28
+        // 33 7.104
+        return String.format("SELECT ROUND("+quote("%%s",quote)+",17) FROM %s WHERE %s LIMIT 1;", table, condition);
 
     }
 
-    private String buildSelectQuery(String table, List<String> columns, String quote){
-        return String.format("SELECT * FROM %s WHERE (%s) = (%s) LIMIT 2;",
-                table,
-                columns.stream().collect(Collectors.joining(quote + "," + quote, quote, quote)),
-                Stream.generate( () -> "?" ).limit(columns.size()).collect(Collectors.joining(",")));
+    private String quote(String string, String quote){
+        return quote + string + quote;
+    }
+
+    private String buildSelectAllQuery(String table, String condition){
+
+        return String.format("SELECT * FROM %s WHERE %s LIMIT 2;", table, condition);
+
+    }
+
+    private String buildQueryConditionPart(List<String> columns, String quote){
+        return String.format("(%s) = (%s)",
+                columns.stream().map(c -> quote(c, quote) ).collect(Collectors.joining(",")),
+                Stream.generate( () -> "?" ).limit(columns.size()).collect(Collectors.joining(","))
+            );
     }
 
     private String getQuote(String sourceName){

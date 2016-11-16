@@ -56,4 +56,5 @@ public class ValidationTaskDescription {
     public Map<String, Object> getSourceTransformation() {
         return sourceTransformation;
     }
+
 }
