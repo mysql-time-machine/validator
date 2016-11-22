@@ -1,11 +1,13 @@
 package com.booking.validator.service;
 
+import com.booking.validator.service.task.ValidationTask;
 import com.booking.validator.service.task.ValidationTaskResult;
 import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -18,10 +20,17 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
     private final MetricRegistry registry;
 
-    public ResultConsumer(MetricRegistry registry) {
+    private final Consumer<ValidationTask> retrier;
+
+    private final int retriesLimit;
+
+    public ResultConsumer(MetricRegistry registry, int retriesLimit, Consumer<ValidationTask> retrier) {
 
         this.registry = registry;
 
+        this.retrier = retrier;
+
+        this.retriesLimit = retriesLimit;
     }
 
     @Override
@@ -52,15 +61,29 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
                 if (result.isOk()){
 
-                    LOGGER.info("Task {} tagged {} is processed successfully, the result is positive", id, tag);
+                    LOGGER.info("Task {} tagged {} is processed successfully, the result is positive after {} tries", id, tag, result.getTask().getTriesCount());
 
                     registry.counter(name("tasks", tag, "positive")).inc();
 
                 } else {
 
-                    LOGGER.warn("Task {} result is negative: {}", result.getTask(), result.getDicrepancy());
+                    ValidationTask task = result.getTask();
 
-                    registry.counter(name("tasks", tag, "negative")).inc();
+                    if (task.getTriesCount() > retriesLimit) {
+
+                        LOGGER.warn("Task {} result is still negative: {} after {} tries", result.getTask(), result.getDicrepancy(),retriesLimit+1);
+
+                        registry.counter(name("tasks", tag, "negative")).inc();
+
+                    } else {
+
+                        retrier.accept(task);
+
+                        registry.counter(name("tasks", tag, "retries")).inc();
+
+                        LOGGER.info("Task {} tagged {} is processed successfully, the result is negative, will retry", id, tag);
+
+                    }
 
                 }
 

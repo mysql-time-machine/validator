@@ -1,6 +1,7 @@
 package com.booking.validator.data.mysql;
 
 import com.booking.validator.data.Data;
+import com.booking.validator.utils.HexEncoder;
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,15 @@ public class Transformation {
 
                 default:
 
-                    value = (rawValue == null ? null : rawValue.toString());
+                    if (rawValue instanceof byte[]){
+
+                        value = HexEncoder.encode((byte[]) rawValue);
+
+                    } else {
+
+                        value = (rawValue == null ? null : rawValue.toString());
+
+                    }
 
                     break;
             }

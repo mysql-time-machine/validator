@@ -64,6 +64,30 @@ public class ValidatorConfiguration {
         }
     }
 
+    public static class RetryPolicy {
+
+        @JsonProperty("retries_limit")
+        private int retriesLimit = 2;
+
+        @JsonProperty("delay")
+        private long delay = 3000;
+
+        @JsonProperty("queue_size")
+        private int queueSize = 1000;
+
+        public int getRetriesLimit() {
+            return retriesLimit;
+        }
+
+        public int getQueueSize() {
+            return queueSize;
+        }
+
+        public long getDelay(){
+            return delay;
+        }
+    }
+
     public static ValidatorConfiguration fromFile(String path) throws IOException {
 
         if (path == null) throw new IllegalArgumentException("The path to file to is missing");
@@ -87,6 +111,9 @@ public class ValidatorConfiguration {
     @JsonProperty("reporter")
     private Reporter reporter;
 
+    @JsonProperty("retry_policy")
+    private RetryPolicy retryPolicy = new RetryPolicy();
+
     public Iterable<DataSource> getDataSources() {
         return dataSources;
     }
@@ -96,4 +123,6 @@ public class ValidatorConfiguration {
     }
 
     public Reporter getReporter() { return reporter; }
+
+    public RetryPolicy getRetryPolicy() {return retryPolicy; }
 }

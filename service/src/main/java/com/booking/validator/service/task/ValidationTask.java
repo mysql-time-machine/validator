@@ -17,6 +17,8 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
     private final String tag;
     private final String id;
 
+    private int triesCount;
+
     public ValidationTask(String id, String tag, DataPointer source, DataPointer target) {
         this.tag = tag;
         this.source = source;
@@ -39,6 +41,8 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
 
     protected ValidationTaskResult validate(Data sourceData, Data targetData ){
 
+        triesCount++;
+
         return new ValidationTaskResult(this, Data.discrepancy(sourceData, targetData), null);
 
     }
@@ -47,6 +51,10 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
 
         return String.format("[Task id=%s tag=%s source=%s target=%s]", id, tag, source, target);
 
+    }
+
+    public int getTriesCount() {
+        return triesCount;
     }
 
 }

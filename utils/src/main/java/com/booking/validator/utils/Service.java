@@ -7,6 +7,10 @@ public interface Service {
 
     default void start() {}
 
+    default void pause() {}
+
+    default void resume() {}
+
     default void stop() {}
 
 }

@@ -70,7 +70,7 @@ public class FunctionalTest {
 
         configuration.entrySet().stream().forEach( x -> properties.setProperty(x.getKey(), x.getValue()) );
 
-        return KafkaValidationTaskDescriptionSupplier.getInstance( TOPIC, properties );
+        return KafkaValidationTaskDescriptionSupplier.getInstance( TOPIC,2, properties );
 
     }
 
