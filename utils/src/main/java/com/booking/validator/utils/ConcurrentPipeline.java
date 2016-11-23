@@ -36,7 +36,7 @@ public class ConcurrentPipeline<T> implements Service {
 
         run = true;
 
-        for ( int i=0; i<concurrencyLimit; i++ ) startTaskAsync();
+        for (int i = 0; i < concurrencyLimit; i++) startTaskAsync();
 
     }
 
@@ -51,7 +51,8 @@ public class ConcurrentPipeline<T> implements Service {
 
         if (run) CompletableFuture.supplyAsync(supplier)
                 .thenCompose( Supplier::get )
-                .whenComplete( consumer.andThen( (x,t)->startTaskAsync() ) );
+                .whenComplete( consumer )
+                .whenComplete( (x,t)->startTaskAsync()); // a consumer exception could be handled here
 
     }
 

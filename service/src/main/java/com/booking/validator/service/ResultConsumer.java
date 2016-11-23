@@ -36,52 +36,56 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
     @Override
     public void accept(ValidationTaskResult result, Throwable t) {
 
-        if (t != null){
+        try {
 
-            LOGGER.error("Error fetching a task", t);
+            if (t != null) {
 
-            registry.counter(name("tasks", "incorrect")).inc();
+                LOGGER.error("Task fetching error:", t);
 
-        } else {
-
-            Throwable error = result.getError();
-
-            String id = result.getId();
-            String tag = result.getTag();
-
-            if (tag == null || tag.isEmpty()) tag = "notag";
-
-            if ( error != null ){
-
-                LOGGER.error("Error processing the task {}", result.getTask(), error);
-
-                registry.counter(name("tasks", tag, "failed")).inc();
+                registry.counter(name("tasks", "incorrect")).inc();
 
             } else {
 
-                if (result.isOk()){
+                Throwable error = result.getError();
 
-                    LOGGER.info("Task {} tagged {} is processed successfully, the result is positive after {} tries", id, tag, result.getTask().getTriesCount());
+                String id = result.getId();
+                String tag = result.getTag();
 
-                    registry.counter(name("tasks", tag, "positive")).inc();
+                if (tag == null || tag.isEmpty()) tag = "no-tag";
+
+                if (error != null) {
+
+                    LOGGER.error("Task {} processing error:", result.getTask(), error);
+
+                    registry.counter(name("tasks", tag, "failed")).inc();
 
                 } else {
 
-                    ValidationTask task = result.getTask();
+                    if (result.isOk()) {
 
-                    if (task.getTriesCount() > retriesLimit) {
+                        LOGGER.info("Task {} tagged {} result is positive after {} tries", id, tag, result.getTask().getTriesCount());
 
-                        LOGGER.warn("Task {} result is still negative: {} after {} tries", result.getTask(), result.getDicrepancy(),retriesLimit+1);
-
-                        registry.counter(name("tasks", tag, "negative")).inc();
+                        registry.counter(name("tasks", tag, "positive")).inc();
 
                     } else {
 
-                        retrier.accept(task);
+                        ValidationTask task = result.getTask();
 
-                        registry.counter(name("tasks", tag, "retries")).inc();
+                        if (task.getTriesCount() > retriesLimit) {
 
-                        LOGGER.info("Task {} tagged {} is processed successfully, the result is negative, will retry", id, tag);
+                            LOGGER.warn("Task {} result is negative: {} after {} tries", result.getTask(), result.getDicrepancy(), retriesLimit + 1);
+
+                            registry.counter(name("tasks", tag, "negative")).inc();
+
+                        } else {
+
+                            retrier.accept(task);
+
+                            registry.counter(name("tasks", tag, "retries")).inc();
+
+                            LOGGER.info("Task {} tagged {} result is negative, will retry", id, tag);
+
+                        }
 
                     }
 
@@ -89,7 +93,12 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
             }
 
-        }
+        } catch (Exception e){
 
+            // The reason is that consumer's code is being executed in a common thread pull where its exceptions are
+            // silently eaten. An alternative would be to extend the concurrent pipeline with a handler of consumers exceptions.
+            LOGGER.error("Error handling task completion", e);
+
+        }
     }
 }
