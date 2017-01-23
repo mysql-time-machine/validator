@@ -25,7 +25,7 @@ public class ValidationTaskResult {
 
     public Throwable getError() { return error; }
 
-    public boolean isOk(){ return  error == null && dicrepancy == null; }
+    public boolean isOk(){ return  error == null && !dicrepancy.hasDiscrepancy(); }
 
     public Data.Discrepancy getDicrepancy(){ return dicrepancy; }
 

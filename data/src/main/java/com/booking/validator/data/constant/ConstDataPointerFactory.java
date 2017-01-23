@@ -36,7 +36,7 @@ public class ConstDataPointerFactory implements DataPointerFactory {
 
         URI uri = URI.create(uriString);
 
-        Map<String,String> rows = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toMap(s->s[0],s->s[1]));
+        Map<String,Object> rows = Arrays.stream(uri.getQuery().split("&")).map(s->s.split("=")).collect(Collectors.toMap(s->s[0], s->s[1]));
 
         return new ConstDataPointer(new Data(rows));
 

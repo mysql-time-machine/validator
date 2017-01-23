@@ -33,7 +33,7 @@ public class Transformation {
 
     public Data transform(NavigableMap<byte[],byte[]> familyMap){
 
-        Map<String,String> row = new HashMap<>();
+        Map<String,Object> row = new HashMap<>();
 
         // the row status "D" means the row should be treated as deleted
         if ( Arrays.equals(Bytes.toBytes("D"),familyMap.remove(Bytes.toBytes(rowStatusColumn)))) return null;

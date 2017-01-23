@@ -28,8 +28,6 @@ public class ValidationTaskDescriptionDeserializer implements Deserializer<Valid
 
             ValidationTaskDescription task = mapper.readValue(bytes, ValidationTaskDescription.class);
 
-            task.setId( id );
-
             return task;
 
         } catch (IOException e) {

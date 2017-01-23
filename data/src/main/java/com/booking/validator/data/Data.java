@@ -1,6 +1,5 @@
 package com.booking.validator.data;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,76 +10,67 @@ public class Data {
 
     public static class Discrepancy {
 
-        private final Data expected;
-        private final Data actual;
+        private static String columnDiff(String column, Object[] discrepancy){
 
-        private Discrepancy(Data source, Data target) {
-            this.expected = source;
-            this.actual = target;
+            return String.format("%s=[%s,%s]", column,
+                    discrepancy[0] == null ? "MISSING" : discrepancy[0].toString(),
+                    discrepancy[1] == null ? "MISSING" : discrepancy[1].toString()
+            );
+
+        }
+
+        private final Map<String, Object[]> discrepancies = new HashMap<>();
+        private final boolean isActualExists;
+        private final boolean isExpectedExists;
+
+        private Discrepancy(Data expected, Data actual) {
+            isExpectedExists = expected != null;
+            isActualExists = actual != null;
+            if (expected == null || actual == null) return;
+
+            EqualityTester equalityTester = new EqualityTester();
+            Set<String> columnNames = new HashSet<>();
+            columnNames.addAll(expected.row.keySet());
+            columnNames.addAll(actual.row.keySet());
+
+            columnNames.stream()
+                    .filter( k -> ! equalityTester.testEquality(expected.row.get(k), actual.row.get(k)) )
+                    .forEach( k -> discrepancies.put(k, new Object[] {expected.row.get(k), actual.row.get(k)})
+                    );
+        }
+
+        public boolean hasDiscrepancy() {
+            if (!isExpectedExists && !isActualExists) return false;
+            if (isExpectedExists != isActualExists) return true;
+
+            return discrepancies.size() > 0;
         }
 
         @Override
         public String toString(){
+            if (!hasDiscrepancy()) return "Data are equal";
+            if ( !isExpectedExists ) return "Expected no data, but have got some";
+            if ( !isActualExists ) return "Expected data, but have got nothing";
 
-            assert expected != null || actual != null;
+            String difference = discrepancies.keySet().stream()
+                    .map( k -> columnDiff(k, discrepancies.get(k)) )
+                    .collect(Collectors.joining(", "));
 
-            if ( expected == null ) return "Expected no data";
-            if ( actual == null ) return "Expected data";
-
-            Set<String> keys = new HashSet<>(expected.row.keySet());
-            keys.addAll(actual.row.keySet());
-
-            String difference = keys.stream().map( k -> columnDiff(k, expected.row, actual.row) ).filter(Objects::nonNull).collect(Collectors.joining(", "));
-
-            return String.format("Expected values differs from actual: %s",difference);
+            return String.format("Expected values differs from actual: %s", difference);
         }
 
     }
 
-    private static String columnDiff(String column, Map<String,String> expectedRow, Map<String,String> actualRow){
-
-        String expected = null;
-        String actual = null;
-
-        boolean columnExpected = expectedRow.containsKey(column);
-        boolean columnPresents = actualRow.containsKey(column);
-
-        if (columnExpected && columnPresents){
-
-            expected = "\"" + expectedRow.get(column) + "\"";
-            actual = "\"" + actualRow.get(column) + "\"";
-
-            if ( Objects.equals(expected, actual) ) return null;
-
-        } else {
-
-            if (!columnExpected) expected = "MISSING";
-
-            if (!columnPresents) actual = "MISSING";
-
-        }
-
-
-        return String.format("%s=[%s,%s]", column, expected, actual);
-
+    public static Discrepancy discrepancy(Data expected, Data actual) {
+        return new Discrepancy(expected, actual);
     }
 
-    public static Discrepancy discrepancy(Data expected, Data actual){
+    private final Map<String, Object> row;
 
-        if ( expected == null && actual == null ) return null;
-        if ( expected == null || actual == null ) return new Discrepancy(expected, actual);
-
-        return expected.row.equals(actual.row) ? null : new Discrepancy(expected, actual);
-
-    }
-
-    private final Map<String,String> row;
-
-    public Data(Map<String,String> row){
+    public Data(Map < String, Object > row) {
 
         if (row == null) throw new IllegalArgumentException();
 
         this.row = new HashMap<>(row);
     }
-
 }

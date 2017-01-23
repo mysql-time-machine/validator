@@ -41,6 +41,7 @@ public class KafkaValidationTaskDescriptionSupplier implements Supplier<Validati
                             droppedRecords = records.count();
 
                             for (ConsumerRecord<String, ValidationTaskDescription> record : records) {
+                                record.value().setId(record.key());
                                 buffer.put(record.value());
                                 droppedRecords--;
 

@@ -4,8 +4,6 @@ import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 import java.util.function.Supplier;
 
 /**

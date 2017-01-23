@@ -2,7 +2,6 @@ package com.booking.validator.service.task;
 
 import com.booking.validator.data.Data;
 import com.booking.validator.data.DataPointer;
-import com.booking.validator.service.protocol.ValidationTaskDescription;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;

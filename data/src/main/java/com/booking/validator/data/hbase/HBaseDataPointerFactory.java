@@ -68,7 +68,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
 
         Connection connection = clusters.get(sourceName);
 
-        if (connection == null) throw new RuntimeException("No such source");
+        if (connection == null) throw new RuntimeException("No source found for name: " + sourceName);
 
         String table = uri.getPath().split("/")[1];
 
