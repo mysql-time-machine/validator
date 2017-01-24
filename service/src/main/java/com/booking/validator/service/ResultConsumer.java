@@ -55,7 +55,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
                 if (error != null) {
 
-                    LOGGER.error("Task {} processing error:", result.getTask(), error);
+                    LOGGER.error("Task {} tagged {}, {} processing error:", id, tag, result.getTask(), error);
 
                     registry.counter(name("tasks", tag, "failed")).inc();
 
@@ -73,7 +73,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
                         if (task.getTriesCount() > retriesLimit) {
 
-                            LOGGER.warn("Task {} result is negative: {} after {} tries", result.getTask(), result.getDicrepancy(), retriesLimit + 1);
+                            LOGGER.warn("Task {} tagged {}, {} result is negative: {} after {} tries", id, tag, result.getTask(), result.getDicrepancy(), retriesLimit + 1);
 
                             registry.counter(name("tasks", tag, "negative")).inc();
 

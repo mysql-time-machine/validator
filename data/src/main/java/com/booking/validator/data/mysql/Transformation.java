@@ -47,7 +47,7 @@ public class Transformation {
     public Data transform(MysqlCell[] cells) throws SQLException{
 
 
-        Map<String,String> result = new HashMap<>();
+        Map<String,Object> result = new HashMap<>();
 
         for (MysqlCell cell : cells){
 
@@ -57,13 +57,21 @@ public class Transformation {
 
             Object rawValue = cell.getValue();
 
-            String value = null;
+            Object value = null;
 
             String type = cell.getType();
 
             switch (type){
 
                 case "DATETIME":
+
+                case "DOUBLE":
+                    value = rawValue;
+                    break;
+
+                case "FLOAT":
+                    value = rawValue;
+                    break;
 
                 case "TIMESTAMP":
 
