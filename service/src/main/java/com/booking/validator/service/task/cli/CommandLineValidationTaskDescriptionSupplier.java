@@ -18,7 +18,10 @@ public class CommandLineValidationTaskDescriptionSupplier implements Supplier<Va
 
         try {
 
-            String input = System.console().readLine();
+            String input = null;
+            while (input == null || input.equals("")) {
+                input = System.console().readLine();
+            }
 
             return mapper.readValue( input , ValidationTaskDescription.class);
         } catch (IOException e) {
