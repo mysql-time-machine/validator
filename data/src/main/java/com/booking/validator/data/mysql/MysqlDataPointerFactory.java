@@ -93,7 +93,7 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
 
         DataSource source = sources.get(sourceName);
 
-        if (source == null) throw new RuntimeException("No source found for name: " + sourceName);
+        if (source == null) throw new MissingDataSourceException("No mysql data source found for: " + sourceName);
 
         String table = uri.getPath().split("/")[1];
 

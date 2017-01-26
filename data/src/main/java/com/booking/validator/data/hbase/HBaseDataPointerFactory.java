@@ -60,7 +60,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
     }
 
     @Override
-    public DataPointer produce(String uriString, Map<String, Object> transformations) throws InvalidDataPointerDescription {
+    public DataPointer produce(String uriString, Map<String, Object> transformations) throws MissingDataSourceException {
 
         URI uri = URI.create(uriString);
 
@@ -68,7 +68,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
 
         Connection connection = clusters.get(sourceName);
 
-        if (connection == null) throw new RuntimeException("No source found for name: " + sourceName);
+        if (connection == null) throw new MissingDataSourceException("No hbase data source found for: " + sourceName);
 
         String table = uri.getPath().split("/")[1];
 

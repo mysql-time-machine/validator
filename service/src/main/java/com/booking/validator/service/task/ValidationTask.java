@@ -15,14 +15,20 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
     private final DataPointer target;
     private final String tag;
     private final String id;
+    private final long createTime;
 
     private int triesCount;
 
     public ValidationTask(String id, String tag, DataPointer source, DataPointer target) {
+        this(id, tag, source, target, System.currentTimeMillis());
+    }
+
+    public ValidationTask(String id, String tag, DataPointer source, DataPointer target, long createTime) {
         this.tag = tag;
         this.source = source;
         this.target = target;
         this.id = id;
+        this.createTime = createTime;
     }
 
     public CompletableFuture<ValidationTaskResult> get(){
@@ -53,7 +59,21 @@ public class ValidationTask implements Supplier<CompletableFuture<ValidationTask
     }
 
     public int getTriesCount() {
+
         return triesCount;
+
+    }
+
+    public int getRetriesCount() {
+
+        return triesCount - 1;
+
+    }
+
+    public long getCreateTime() {
+
+        return createTime;
+
     }
 
 }

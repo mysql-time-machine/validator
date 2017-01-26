@@ -7,12 +7,13 @@ import java.util.Map;
  */
 public interface DataPointerFactory  {
 
-    class InvalidDataPointerDescription extends RuntimeException {
+    class MissingDataSourceException extends RuntimeException {
 
-        public InvalidDataPointerDescription(String message) { super(message);}
+        // Hide stacktrace for this exception
+        public MissingDataSourceException(String message) { super(message, null, true, false); }
 
     }
 
-    DataPointer produce(String uri, Map<String, Object> transformations) throws InvalidDataPointerDescription;
+    DataPointer produce(String uri, Map<String, Object> transformations) throws MissingDataSourceException;
 
 }
