@@ -66,26 +66,12 @@ public class ValidatorConfiguration {
 
     public static class RetryPolicy {
 
-        @JsonProperty("retries_limit")
-        private int retriesLimit = 2;
-
         @JsonProperty("delay")
-        private long delay = 3000;
+        private long[] delay = {3000, 6000, 12000};
 
         @JsonProperty("queue_size")
         private int queueSize = 1000;
 
-        public int getRetriesLimit() {
-            return retriesLimit;
-        }
-
-        public int getQueueSize() {
-            return queueSize;
-        }
-
-        public long getDelay(){
-            return delay;
-        }
     }
 
     public static ValidatorConfiguration fromFile(String path) throws IOException {
@@ -124,5 +110,10 @@ public class ValidatorConfiguration {
 
     public Reporter getReporter() { return reporter; }
 
-    public RetryPolicy getRetryPolicy() {return retryPolicy; }
+    public com.booking.validator.service.RetryPolicy getRetryPolicy() {
+        return new com.booking.validator.service.RetryPolicy(
+                retryPolicy.delay, retryPolicy.queueSize, retryPolicy.delay.length
+        );
+    }
+
 }

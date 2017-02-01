@@ -32,7 +32,7 @@ public class ConstDataPointerFactory implements DataPointerFactory {
     }
 
     @Override
-    public DataPointer produce(String uriString, Map<String, Object> transformations) throws InvalidDataPointerDescription {
+    public DataPointer produce(String uriString, Map<String, Object> transformations) throws MissingDataSourceException {
 
         URI uri = URI.create(uriString);
 

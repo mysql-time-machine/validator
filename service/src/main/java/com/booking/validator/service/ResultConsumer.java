@@ -2,12 +2,14 @@ package com.booking.validator.service;
 
 import com.booking.validator.service.task.ValidationTask;
 import com.booking.validator.service.task.ValidationTaskResult;
+import com.booking.validator.utils.CurrentTimestampProvider;
+import com.booking.validator.utils.CurrentTimestampProviderImpl;
+import com.booking.validator.utils.Retrier;
 import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -20,17 +22,25 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
     private final MetricRegistry registry;
 
-    private final Consumer<ValidationTask> retrier;
+    private final Retrier<ValidationTask> retrier;
 
-    private final int retriesLimit;
+    private final RetryPolicy retryPolicy;
 
-    public ResultConsumer(MetricRegistry registry, int retriesLimit, Consumer<ValidationTask> retrier) {
+    private final CurrentTimestampProvider currentTimestampProvider;
 
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier) {
+        this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl());
+    }
+
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier, CurrentTimestampProvider currentTimestampProvider) {
         this.registry = registry;
-
         this.retrier = retrier;
+        this.retryPolicy = retryPolicy;
+        this.currentTimestampProvider = currentTimestampProvider;
+    }
 
-        this.retriesLimit = retriesLimit;
+    public long getTimeElapsedMillis(long since) {
+        return currentTimestampProvider.getCurrentTimeMillis() - since;
     }
 
     @Override
@@ -40,54 +50,58 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
             if (t != null) {
 
-                LOGGER.error("Task fetching error:", t);
+                LOGGER.error("Task fetching error:", t.getCause());
 
-                registry.counter(name("tasks", "incorrect")).inc();
+                registry.meter(name("tasks", "incorrect")).mark();
+
+                return;
+
+            }
+
+            Throwable error = result.getError();
+
+            String id = result.getId();
+            String tag = result.getTag();
+
+            if (tag == null || tag.isEmpty()) tag = "no-tag";
+
+            if (error != null) {
+
+                LOGGER.error("Task {} tagged {}, {} processing error:", id, tag, result.getTask(), error);
+
+                registry.meter(name("tasks", tag, "failed")).mark();
+
+                return;
+            }
+
+            ValidationTask task = result.getTask();
+
+            if (result.isOk()) {
+
+                LOGGER.info("Task {} tagged {} result is positive after {} tries, processed in {}s", id, tag,
+                        task.getTriesCount(), getTimeElapsedMillis(task.getCreateTime())/1000);
+
+                registry.meter(name("tasks", tag, "positive")).mark();
+                registry.meter(name("tasks", tag, "positive_on_try_" + result.getTask().getTriesCount())).mark();
 
             } else {
 
-                Throwable error = result.getError();
+                if (task.getRetriesCount() >= retryPolicy.getRetriesLimit()) {
 
-                String id = result.getId();
-                String tag = result.getTag();
+                    LOGGER.warn("Task {} tagged {}, {} result is negative: {} after {} tries, processed in {}s",
+                            id, tag, result.getTask(), result.getDicrepancy(), task.getTriesCount(),
+                            getTimeElapsedMillis(task.getCreateTime())/1000);
 
-                if (tag == null || tag.isEmpty()) tag = "no-tag";
-
-                if (error != null) {
-
-                    LOGGER.error("Task {} tagged {}, {} processing error:", id, tag, result.getTask(), error);
-
-                    registry.counter(name("tasks", tag, "failed")).inc();
+                    registry.meter(name("tasks", tag, "negative")).mark();
 
                 } else {
 
-                    if (result.isOk()) {
+                    LOGGER.info("Task {} tagged {} result is negative, will retry {} time in {}s",
+                            id, tag, task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
 
-                        LOGGER.info("Task {} tagged {} result is positive after {} tries", id, tag, result.getTask().getTriesCount());
+                    registry.meter(name("tasks", tag, "retries")).mark();
 
-                        registry.counter(name("tasks", tag, "positive")).inc();
-
-                    } else {
-
-                        ValidationTask task = result.getTask();
-
-                        if (task.getTriesCount() > retriesLimit) {
-
-                            LOGGER.warn("Task {} tagged {}, {} result is negative: {} after {} tries", id, tag, result.getTask(), result.getDicrepancy(), retriesLimit + 1);
-
-                            registry.counter(name("tasks", tag, "negative")).inc();
-
-                        } else {
-
-                            retrier.accept(task);
-
-                            registry.counter(name("tasks", tag, "retries")).inc();
-
-                            LOGGER.info("Task {} tagged {} result is negative, will retry", id, tag);
-
-                        }
-
-                    }
+                    retrier.accept(task, retryPolicy.getDelayForRetry(task.getRetriesCount()));
 
                 }
 

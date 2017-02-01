@@ -9,6 +9,7 @@ import com.booking.validator.service.task.*;
 import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
 import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
 import com.booking.validator.utils.CommandLineArguments;
+import com.booking.validator.utils.Retrier;
 import com.booking.validator.utils.RetryFriendlySupplier;
 import com.booking.validator.utils.Service;
 import com.codahale.metrics.MetricRegistry;
@@ -22,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -118,9 +118,9 @@ public class Launcher {
 
     }
 
-    private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry, Consumer<ValidationTask> retrier){
+    private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<ValidationTask> retrier){
 
-        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy().getRetriesLimit() ,retrier);
+        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier);
 
     }
 
@@ -147,9 +147,9 @@ public class Launcher {
 
         Supplier<ValidationTask> taskSupplier = new TaskSupplier( descriptionSupplier, getDataPointers() );
 
-        ValidatorConfiguration.RetryPolicy policy = validatorConfiguration.getRetryPolicy();
+        RetryPolicy policy = validatorConfiguration.getRetryPolicy();
 
-        return new RetryFriendlySupplier<>(taskSupplier, policy.getDelay(), policy.getQueueSize());
+        return new RetryFriendlySupplier<>(taskSupplier, policy.getQueueSize());
 
     }
 

@@ -1,6 +1,5 @@
 package com.booking.validator.utils;
 
-
 import java.util.function.Supplier;
 
 /**
@@ -10,8 +9,13 @@ public class RetryFriendlySupplier<T> extends NonblockingDelayingSupplier<T> imp
 
     private final Supplier<T> supplier;
 
-    public RetryFriendlySupplier(Supplier<T> supplier, long retryDelay, int retryQueueSoftSizeLimit) {
-        super(retryDelay, retryQueueSoftSizeLimit, retryQueueSoftSizeLimit/2);
+    public RetryFriendlySupplier(Supplier<T> supplier, int retryQueueSoftSizeLimit) {
+        super(retryQueueSoftSizeLimit, retryQueueSoftSizeLimit/2);
+        this.supplier = supplier;
+    }
+
+    public RetryFriendlySupplier(Supplier<T> supplier, int retryQueueSoftSizeLimit, CurrentTimestampProvider currentTimestampProvider) {
+        super(retryQueueSoftSizeLimit, retryQueueSoftSizeLimit/2, currentTimestampProvider);
         this.supplier = supplier;
     }
 
@@ -19,7 +23,6 @@ public class RetryFriendlySupplier<T> extends NonblockingDelayingSupplier<T> imp
     public T get(){
 
         T result = super.get();
-
         if (result == null) result = supplier.get();
 
         return result;

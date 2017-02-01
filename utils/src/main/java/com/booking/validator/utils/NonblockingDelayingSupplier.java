@@ -1,87 +1,95 @@
 package com.booking.validator.utils;
 
-import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * Created by psalimov on 11/18/16.
  */
-public abstract class NonblockingDelayingSupplier<T> implements Supplier<T>, Consumer<T> {
+public class NonblockingDelayingSupplier<T> implements Supplier<T>, Retrier<T> {
 
     private static class TimestampedHolder<T> {
+
+        private static AtomicInteger idGenerator = new AtomicInteger(0);
 
         private final long timestamp;
 
         private final T value;
 
+        private final int id;
+
         private TimestampedHolder(long timestamp, T value) {
             this.timestamp = timestamp;
             this.value = value;
+            this.id = idGenerator.getAndIncrement();
         }
 
         public long getTimestamp() {
             return timestamp;
         }
 
-        public T getValue() {
-            return value;
-        }
+        public T getValue() { return value; }
+
+        public int getId() { return id; }
+
     }
 
     private AtomicInteger size = new AtomicInteger();
     private final int highWaterMark;
     private final int lowWaterMark;
+    private final CurrentTimestampProvider currentTimestampProvider;
 
-    private final Deque<TimestampedHolder<T>> items = new ConcurrentLinkedDeque<>();
+    private final ConcurrentSkipListSet<TimestampedHolder<T>> items = new ConcurrentSkipListSet<>((o1, o2) -> {
+        if (o1.equals(o2)) return 0;
+        int compareTimestamp = Long.compare(o1.getTimestamp(), o2.getTimestamp());
+        if (compareTimestamp != 0) return compareTimestamp;
+        return Integer.compare(o1.getId(), o2.getId());
+    });
 
-    private final long delay;
 
-    public NonblockingDelayingSupplier(long delay, int highWaterMark, int lowWaterMark) {
+    public NonblockingDelayingSupplier(int highWaterMark, int lowWaterMark) {
+        this(highWaterMark, lowWaterMark, new CurrentTimestampProviderImpl());
+    }
+
+    public NonblockingDelayingSupplier(int highWaterMark, int lowWaterMark, CurrentTimestampProvider currentTimestampProvider) {
         this.highWaterMark = highWaterMark;
         this.lowWaterMark = lowWaterMark;
-        this.delay = delay;
+        this.currentTimestampProvider = currentTimestampProvider;
     }
 
     @Override
     public T get() {
 
-        long time = System.currentTimeMillis();
+        long time = currentTimestampProvider.getCurrentTimeMillis();
 
         TimestampedHolder<T> item = items.pollFirst();
 
-        if (item == null){
+        if (item != null) {
 
-            return null;
+            if (item.getTimestamp() < time) {
 
-        } else {
-
-            if (item.getTimestamp()<time){
-
-                if (size.decrementAndGet() == lowWaterMark ) onLowWaterMarkReached();
+                if (size.decrementAndGet() == lowWaterMark) onLowWaterMarkReached();
 
                 return item.getValue();
 
             } else {
 
-                // this messes up order of the front of the queue, so that in theory all the tasks submitted between submission
-                // of the given one and the time it becomes ready could went in front of it delaying its consumption up to
-                // about 2x delay instead of 1x delay. Still as not precision is needed here, we use this naive implementation
-                items.addFirst(item);
+                items.add(item);
 
-                return null;
             }
-
         }
+
+        return null;
 
     }
 
     @Override
-    public void accept(T value){
+    public void accept(T value, long delay) {
 
-        items.addLast(new TimestampedHolder(System.currentTimeMillis() + delay, value));
+        long time = currentTimestampProvider.getCurrentTimeMillis();
+
+        items.add(new TimestampedHolder(time + delay, value));
 
         if (size.incrementAndGet() == highWaterMark) onHighWaterMarkReached();
 
