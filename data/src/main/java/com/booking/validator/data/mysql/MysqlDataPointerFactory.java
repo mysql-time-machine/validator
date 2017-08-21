@@ -59,6 +59,7 @@ public class MysqlDataPointerFactory implements DataPointerFactory{
             source.addConnectionProperty("zeroDateTimeBehavior", "convertToNull");
             source.addConnectionProperty("serverTimezone","Europe/Amsterdam");
             source.addConnectionProperty("yearIsDateType","false");
+            source.addConnectionProperty("tinyInt1isBit", "false");
 
             sources.put(property.getKey(), source);
 
