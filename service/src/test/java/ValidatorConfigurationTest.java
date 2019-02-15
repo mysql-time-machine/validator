@@ -4,14 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import kafka.utils.Time;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 
@@ -148,55 +153,81 @@ public class ValidatorConfigurationTest {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
     }
 
     @Test
     public void ccTest(){
 
-        for (;;){
-            if (updateLastRegistrationTime()) System.out.println("D");
-        }
+        long numberOfIntervals = 10;
+        long testTimeInterval =  numberOfIntervals  * throttlingInterval;
 
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
+
+        // schedule 10 tasks to run every 0.1s
+        for (int i = 0; i < 10; i++) {
+            executor.scheduleWithFixedDelay(() -> {
+                    if (ValidatorConfigurationTest.this.updateLastRegistrationTime()) {
+                        System.out.println("D");
+                    }
+                },
+                0,     // initial delay
+                100,  // re-run period
+                TimeUnit.MILLISECONDS
+            );
+        }
+        try {
+            executor.awaitTermination(testTimeInterval, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executor.shutdown();
+
+        assertEquals(numberOfIntervals, unsafeCounter);
     }
 
-    private final long throttlingInterval = 5000;
+    private final long throttlingInterval = 1000;
     private long lastRegistrationTime;
+
+    private long unsafeCounter = 0;
 
     private final AtomicBoolean registrationWeakLock = new AtomicBoolean();
 
+    // onceEveryNSeconds
     private boolean updateLastRegistrationTime(){
 
         long currentTime = System.currentTimeMillis();
+
+        // This method can be called all the time concurrently, but the update of the
+        // value should happen * once every 5sec * and should be non-blocking for other
+        // threads.
 
         // Double-checked locking WITHOUT volatile:
         // Write to lastRegistrationTime happens-before its second read cause AtomicBoolean write-read sequence is in between.
         // First read may not be consistent (is racy) cause java does not guarantee atomicity for writing longs. But taking,
         // into account the nature of the value it is not a problem
-        if (isTimeWindowEmpty(currentTime)){
+        if (isOutOfThrottlingInterval(currentTime)){
 
-            if (registrationWeakLock.compareAndSet(false,true)){
+            if (registrationWeakLock.compareAndSet(false,true)) {
 
-                if (isTimeWindowEmpty(currentTime)){
+                if (isOutOfThrottlingInterval(currentTime)){
 
                     lastRegistrationTime = currentTime;
+
+                    unsafeCounter++;
+                    System.out.println("weakly protected counter => " + unsafeCounter);
 
                     registrationWeakLock.set(false);
 
                     return true;
-
                 }
             }
-
         }
 
         return false;
     }
 
-    private boolean isTimeWindowEmpty(long currentTime){
-
+    private boolean isOutOfThrottlingInterval(long currentTime){
         return currentTime - lastRegistrationTime > throttlingInterval;
-
     }
 
     @Test

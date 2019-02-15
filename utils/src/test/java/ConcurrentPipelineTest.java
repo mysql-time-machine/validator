@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 public class ConcurrentPipelineTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testLimit() {
 
         final AtomicInteger counter = new AtomicInteger();
@@ -35,25 +36,20 @@ public class ConcurrentPipelineTest {
                         throw new RuntimeException("Supplier error" + c);
                     }
 
-                    return new Supplier<CompletableFuture>() {
-                        @Override
-                        public CompletableFuture get() {
-                            return CompletableFuture.supplyAsync(() -> {
+                    return (Supplier<CompletableFuture>) () -> CompletableFuture.supplyAsync(() -> {
 
-                                try {
-                                    Thread.sleep(r.nextInt(400) + 100);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                                if (r.nextInt(10) < 2) {
-                                    throw new RuntimeException("Transformer error " + c);
-                                }
-
-                                return c;
-                            });
+                        try {
+                            Thread.sleep(r.nextInt(400) + 100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                    };
+
+                        if (r.nextInt(10) < 2) {
+                            throw new RuntimeException("Transformer error " + c);
+                        }
+
+                        return c;
+                    });
 
                 },
 
