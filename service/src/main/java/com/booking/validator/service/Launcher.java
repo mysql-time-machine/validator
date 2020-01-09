@@ -36,7 +36,9 @@ public class Launcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
+    private static final String BIGTABLE = "bigtable";
     private static final String HBASE = "hbase";
+    private static String STORAGE;
     private static final String CONST = "const";
     private static final String MYSQL = "mysql";
     private static final String KAFKA = "kafka";
@@ -47,7 +49,7 @@ public class Launcher {
         LOGGER.info("Starting validator service...");
 
         CommandLineArguments command = new CommandLineArguments(args);
-
+        STORAGE = command.getUseHbase() ? HBASE: BIGTABLE;
         ValidatorConfiguration validatorConfiguration;
 
         try {
@@ -174,7 +176,7 @@ public class Launcher {
         Map<String, List<ValidatorConfiguration.DataSource>> sourcesByType = StreamSupport.stream( validatorConfiguration.getDataSources().spliterator(), false )
                 .collect( Collectors.groupingBy( source -> source.getType() ) );
 
-        knownFactories.put(HBASE, getHBaseFactory( sourcesByType.getOrDefault( HBASE, Collections.EMPTY_LIST ) ));
+        knownFactories.put(HBASE, getHBaseFactory( sourcesByType.getOrDefault( STORAGE, Collections.EMPTY_LIST ) ));
         knownFactories.put(MYSQL, getMysqlFactory( sourcesByType.getOrDefault( MYSQL, Collections.EMPTY_LIST ) ));
         knownFactories.put(CONST, new ConstDataPointerFactory());
 
@@ -196,13 +198,9 @@ public class Launcher {
                 .collect( Collectors.toMap(
                         s -> s.getName(),
                         s-> {
-
                             Configuration configuration = HBaseConfiguration.create();
-
                             s.getConfiguration().forEach( (key,value) -> configuration.set(key,value) );
-
                             return configuration;
-
                         } ) );
 
         return HBaseDataPointerFactory.build(hbaseConfigurations);

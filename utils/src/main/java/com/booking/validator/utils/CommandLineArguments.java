@@ -6,16 +6,19 @@ package com.booking.validator.utils;
 public class CommandLineArguments {
 
     private String configurationPath;
+    private Boolean useHbase;
 
     public CommandLineArguments(String... args){
-
+        useHbase = false;
         for (int i=0; i<args.length; i++){
-            if ("--config".equals(args[i])){
+            if ("--config-file".equals(args[i])){
                 configurationPath = args[++i];
+            } else if ("--use-hbase".equals(args[i]) || "--hbase".equals(args[i])) {
+                useHbase = true;
             }
         }
 
-        if (configurationPath == null || configurationPath.isEmpty()) throw new RuntimeException("--config file path is not provided");
+        if (configurationPath == null || configurationPath.isEmpty()) throw new RuntimeException("--config-file path is not provided");
 
     }
 
@@ -25,4 +28,8 @@ public class CommandLineArguments {
 
     }
 
+    public Boolean getUseHbase() {
+
+        return useHbase;
+    }
 }

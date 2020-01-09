@@ -39,7 +39,7 @@ public class Data {
                     );
         }
 
-        public boolean hasDiscrepancy() {
+            public boolean hasDiscrepancy() {
             if (!isExpectedExists && !isActualExists) return false;
             if (isExpectedExists != isActualExists) return true;
 
