@@ -1,38 +1,28 @@
 # Validator
-> A service for validating replicator correctness.
+> A service for ensuring Data Correctness
+
+`Java 8` ☕️
 
 ---
 
 ### Overview
-```
-+-------+
-| MySQL |
-+-------+ -- BinLog --> +-----------+
-                        | Connector | Parses binary logs
-                +-------+-----------+
-                | sends objects to replicator
-                +-----> +------------+ -------> ____
-                        | Replicator | Augment  |AS|  
-                +-------+------------+ <------- """"
-                | Augments to Active Schema and forwards
-                +-----> +---------+    +----------------+
-                        | Applier | -> | BigTable/Kafka |
-                        +---------+    +----------------+
-                                                        |
-                                                        |
-                        +-----------+                   |
-                        | Validator |   0.1% write reqs |
-                        +-----------+ <-----------------+
-                                        Supplier <Kafka>
-____                            
-|AS| -> Active Schema (Only columns and no rows). Mimics the real-time schema of the tables using a skeleton and applying all table altering operations on it.
-""""
-+-----------+
-| Validator | -> queries BigTable and MySQL for validation
-+-----------+ -> Sends discrepancies to reporter <Grafana>
- 
-```
+- Validator was initially built to ensure Data Correctness in [Replicator](https://github.com/mysql-time-machine/replicator).
+- Can be used for validating data between any two data sources.
+
+### Configuration
+- Sample validator configuration is in `validator-conf.yaml`
+- Config options:
+    - **data_sources**: Currently supports `mysql`/`hbase`/`bigtable`
+    - **task_supplier**: Currently supports `kafka`
+    - **reporter**: Currently supports `graphite`
+    - **retry_policy**: Specifies delay for retry in case of mismatch. (in milliseconds)
+- Detailed configuration instructions can be found [here](https://github.com/mysql-time-machine/validator/tree/master/docs/CONFIGURATION.md).
 
 ### Setup/Run instructions
-- 
+`LOCAL`
+- Clone this repository and `$ cd validator/`
+- `$ mvn clean package` Builds a JAR from the source
+- `$ ./run.sh` Runs the validator using **validator-conf.yaml**
 
+`DOCKER`
+- `TODO`
