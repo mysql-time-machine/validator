@@ -1,6 +1,5 @@
 import com.booking.validator.data.Data;
 import com.mysql.cj.jdbc.io.JdbcTimestampValueFactory;
-import org.jcodings.specific.UTF8Encoding;
 import org.junit.Test;
 
 import java.net.URI;

@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
 public class HBaseDataPointerFactory implements DataPointerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HBaseDataPointerFactory.class);
-
-    private static final String HBASE = "hbase";
+    private static final String HBASE_BIGTABLE_CLUSTER = "hbase-cluster";
 
     private final Map<String, Connection> clusters;
 
@@ -41,7 +40,7 @@ public class HBaseDataPointerFactory implements DataPointerFactory {
 
                 Connection connection = ConnectionFactory.createConnection( clusterAndConfig.getValue() );
 
-                clusters.put( clusterAndConfig.getKey(), connection );
+                clusters.put( HBASE_BIGTABLE_CLUSTER, connection );
 
             } catch (IOException e) {
 

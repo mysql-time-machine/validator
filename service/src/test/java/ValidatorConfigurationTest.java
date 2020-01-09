@@ -281,7 +281,7 @@ public class ValidatorConfigurationTest {
         System.out.println(d3);
         System.out.println(d4);
 
-        assertEquals(d1,d2);
+        assertEquals(d1,d2, 0.01);
     }
 
 }

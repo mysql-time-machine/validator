@@ -1,0 +1,43 @@
+data_sources:
+  - name: bigtable
+    type: bigtable
+    configuration:
+      google.bigtable.project.id: '<your-project-id>'
+      google.bigtable.instance.id: '<your-bigtable-instance>'
+      hbase.client.connection.impl: 'com.google.cloud.bigtable.hbase1_x.BigtableConnection'
+
+  - name: hbase
+    type: hbase
+    configuration:
+      hbase.zookeeper.quorum: hbase
+
+  - name: 'test'
+    type: mysql
+    configuration:
+      username: username
+      password: password
+      host: mysql-host
+      schema: test
+      port: 3306
+
+task_supplier:
+  type: kafka
+  configuration:
+    topic: validation
+    group.id: validators
+    bootstrap.servers: "kafka-broker:9092"
+
+reporter:
+  type: graphite
+  configuration:
+    host: 'graphite-host'
+    port: 2003
+    namespace: general.validator
+    period: 1
+
+retry_policy:
+  delay:
+    - 1000
+    - 4000
+    - 20000
+    - 35000
