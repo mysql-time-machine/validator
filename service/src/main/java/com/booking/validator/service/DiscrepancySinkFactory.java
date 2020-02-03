@@ -1,5 +1,6 @@
 package com.booking.validator.service;
 
+import com.booking.validator.service.task.ValidationTask;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -25,18 +26,13 @@ public class DiscrepancySinkFactory {
         public String getValue() {
             return value;
         }
-    }
-
-    public static class DiscrepancySinkMessage {
-        @JsonProperty("task")
-        private String task;
-
-        @JsonProperty("discrepancy")
-        private String discrepancy;
-
-        public DiscrepancySinkMessage(String task, String discrepancy) {
-            this.task = task;
-            this.discrepancy = discrepancy;
+        public static Types fromString(String text) {
+            for (Types b : Types.values()) {
+                if (b.getValue().equalsIgnoreCase(text)) {
+                    return b;
+                }
+            }
+            return null;
         }
     }
 
@@ -45,7 +41,7 @@ public class DiscrepancySinkFactory {
     }
 
     public static DiscrepancySink getDiscrepancySink(String type, Map<String, String> config) {
-        switch (Types.valueOf(type)) {
+        switch (Types.fromString(type.trim())) {
             case CONSOLE:
                 ConsoleDiscrepancySink consoleDiscrepancySink = new ConsoleDiscrepancySink(config);
                 return consoleDiscrepancySink;

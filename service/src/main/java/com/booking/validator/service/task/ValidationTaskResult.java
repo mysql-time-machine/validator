@@ -1,14 +1,21 @@
 package com.booking.validator.service.task;
 
 import com.booking.validator.data.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Created by psalimov on 9/7/16.
  */
 public class ValidationTaskResult {
 
+    @JsonProperty("discrepancy")
+    private final String discrepancyString;
+
     private final Data.Discrepancy dicrepancy;
+
+    @JsonProperty("task")
     private final ValidationTask task;
+
     private final Throwable error;
 
     public ValidationTaskResult(ValidationTask task, Data.Discrepancy discrepancy, Throwable error) {
@@ -16,6 +23,7 @@ public class ValidationTaskResult {
         this.task = task;
         this.dicrepancy = discrepancy;
         this.error = error;
+        this.discrepancyString = discrepancy.toString();
 
     }
 

@@ -6,6 +6,7 @@ import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,8 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier) {
-        this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), null);
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
+        this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), discrepancySink);
     }
 
     public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier,
@@ -44,6 +45,10 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
         this.retryPolicy = retryPolicy;
         this.currentTimestampProvider = currentTimestampProvider;
         this.discrepancySink = discrepancySink;
+        objectMapper.disable(MapperFeature.AUTO_DETECT_CREATORS,
+                MapperFeature.AUTO_DETECT_FIELDS,
+                MapperFeature.AUTO_DETECT_GETTERS,
+                MapperFeature.AUTO_DETECT_IS_GETTERS);
     }
 
     public long getTimeElapsedMillis(long since) {
@@ -127,10 +132,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
     private void sendDiscrepancyToSink(ValidationTaskResult result) {
         try {
             if (discrepancySink != null) {
-                DiscrepancySinkFactory.DiscrepancySinkMessage message = new DiscrepancySinkFactory.DiscrepancySinkMessage(
-                        result.getTask().toString(),
-                        result.getDicrepancy().toString());
-                discrepancySink.send(objectMapper.writeValueAsString(message));
+                discrepancySink.send(objectMapper.writeValueAsString(result));
             }
         } catch (Exception e) {
             LOGGER.error(e.getStackTrace().toString());

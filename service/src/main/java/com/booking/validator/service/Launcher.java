@@ -122,7 +122,7 @@ public class Launcher {
 
     private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<ValidationTask> retrier){
 
-        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier);
+        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier, getDiscrepancySink());
 
     }
 
