@@ -35,6 +35,12 @@ reporter:
     namespace: general.validator
     period: 1
 
+discrepancy_sink: # Optional
+  type: kafka
+  configuration:
+    topic: replicator_validator_discrepancy_sink
+    broker.list: "kafka-broker:9092"
+
 retry_policy:
   delay:
     - 1000

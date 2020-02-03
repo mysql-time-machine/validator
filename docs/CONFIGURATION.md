@@ -24,5 +24,12 @@ This publishes metrics to a time-series database for monitoring.
 - Supports:
     - Graphite
 
+### Discrepancy Sink
+This publishes discrepancies that are confirmed after retries to a sink.
+
+- Supports:
+    - Kafka
+    - Console
+
 ### Retry Policy
 This governs when and how many times to retry in case of mismatches.
