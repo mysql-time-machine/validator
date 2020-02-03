@@ -74,6 +74,20 @@ public class ValidatorConfiguration {
 
     }
 
+    public static class DiscrepancySink {
+
+        private String type;
+        private Map<String,String> configuration;
+
+        public String getType() {
+            return type;
+        }
+
+        public Map<String, String> getConfiguration() {
+            return configuration;
+        }
+    }
+
     public static ValidatorConfiguration fromFile(String path) throws IOException {
 
         if (path == null) throw new IllegalArgumentException("The path to file to is missing");
@@ -97,6 +111,9 @@ public class ValidatorConfiguration {
     @JsonProperty("reporter")
     private Reporter reporter;
 
+    @JsonProperty("discrepancy_sink")
+    private DiscrepancySink discrepancySink;
+
     @JsonProperty("retry_policy")
     private RetryPolicy retryPolicy = new RetryPolicy();
 
@@ -109,6 +126,8 @@ public class ValidatorConfiguration {
     }
 
     public Reporter getReporter() { return reporter; }
+
+    public DiscrepancySink getDiscrepancySink() { return discrepancySink; }
 
     public com.booking.validator.service.RetryPolicy getRetryPolicy() {
         return new com.booking.validator.service.RetryPolicy(

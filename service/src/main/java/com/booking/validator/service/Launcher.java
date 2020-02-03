@@ -126,6 +126,15 @@ public class Launcher {
 
     }
 
+    private DiscrepancySinkFactory.DiscrepancySink getDiscrepancySink() {
+        ValidatorConfiguration.DiscrepancySink discrepancySink = validatorConfiguration.getDiscrepancySink();
+        if (discrepancySink != null) {
+            return DiscrepancySinkFactory.getDiscrepancySink(discrepancySink.getType(), discrepancySink.getConfiguration());
+        }
+        return null;
+    }
+
+
     private RetryFriendlySupplier<ValidationTask> getTaskSupplier(){
 
         ValidatorConfiguration.TaskSupplier supplierDescription = validatorConfiguration.getTaskSupplier();
