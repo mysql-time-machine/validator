@@ -122,9 +122,18 @@ public class Launcher {
 
     private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<ValidationTask> retrier){
 
-        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier);
+        return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier, getDiscrepancySink());
 
     }
+
+    private DiscrepancySinkFactory.DiscrepancySink getDiscrepancySink() {
+        ValidatorConfiguration.DiscrepancySink discrepancySink = validatorConfiguration.getDiscrepancySink();
+        if (discrepancySink != null) {
+            return DiscrepancySinkFactory.getDiscrepancySink(discrepancySink.getType(), discrepancySink.getConfiguration());
+        }
+        return null;
+    }
+
 
     private RetryFriendlySupplier<ValidationTask> getTaskSupplier(){
 

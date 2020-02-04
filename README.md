@@ -15,6 +15,7 @@
     - **data_sources**: Currently supports `mysql`/`hbase`/`bigtable`
     - **task_supplier**: Currently supports `kafka`
     - **reporter**: Currently supports `graphite`
+    - **discrepancy_sink**: Currently supports `kafka`
     - **retry_policy**: Specifies delay for retry in case of mismatch. (in milliseconds)
 - Detailed configuration instructions can be found [here](https://github.com/mysql-time-machine/validator/tree/master/docs/CONFIGURATION.md).
 

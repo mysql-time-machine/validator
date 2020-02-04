@@ -6,6 +6,8 @@ import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,15 +30,25 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
     private final CurrentTimestampProvider currentTimestampProvider;
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier) {
-        this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl());
+    private final DiscrepancySinkFactory.DiscrepancySink discrepancySink;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
+        this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), discrepancySink);
     }
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier, CurrentTimestampProvider currentTimestampProvider) {
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier,
+                          CurrentTimestampProvider currentTimestampProvider, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this.registry = registry;
         this.retrier = retrier;
         this.retryPolicy = retryPolicy;
         this.currentTimestampProvider = currentTimestampProvider;
+        this.discrepancySink = discrepancySink;
+        objectMapper.disable(MapperFeature.AUTO_DETECT_CREATORS,
+                MapperFeature.AUTO_DETECT_FIELDS,
+                MapperFeature.AUTO_DETECT_GETTERS,
+                MapperFeature.AUTO_DETECT_IS_GETTERS);
     }
 
     public long getTimeElapsedMillis(long since) {
@@ -93,11 +105,12 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
                             getTimeElapsedMillis(task.getCreateTime())/1000);
 
                     registry.meter(name("tasks", tag, "negative")).mark();
+                    sendDiscrepancyToSink(result);
 
                 } else {
 
-                    LOGGER.info("Task {} tagged {} result is negative, will retry {} time in {}s",
-                            id, tag, task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
+                    LOGGER.info("Task {} tagged {} result is negative: {}, will retry {} time in {}s",
+                            id, tag, result.getDicrepancy(), task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
 
                     registry.meter(name("tasks", tag, "retries")).mark();
 
@@ -113,6 +126,16 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
             // silently eaten. An alternative would be to extend the concurrent pipeline with a handler of consumers exceptions.
             LOGGER.error("Error handling task completion", e);
 
+        }
+    }
+
+    private void sendDiscrepancyToSink(ValidationTaskResult result) {
+        try {
+            if (discrepancySink != null) {
+                discrepancySink.send(objectMapper.writeValueAsString(result));
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getStackTrace().toString());
         }
     }
 }
