@@ -1,12 +1,10 @@
 import com.booking.validator.data.constant.ConstDataPointerFactory;
 import com.booking.validator.data.DataPointerFactory;
 import com.booking.validator.service.DataPointerFactories;
-import com.booking.validator.service.task.ValidationTaskResult;
 import com.booking.validator.service.Validator;
-import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.booking.validator.service.TaskSupplier;
-import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
-import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
+import com.booking.validator.service.supplier.cli.CommandLineTaskSupplier;
+import com.booking.validator.service.supplier.kafka.KafkaTaskSupplier;
 import com.booking.validator.utils.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +68,7 @@ public class FunctionalTest {
 
         configuration.entrySet().stream().forEach( x -> properties.setProperty(x.getKey(), x.getValue()) );
 
-        return KafkaValidationTaskDescriptionSupplier.getInstance( TOPIC,2, properties );
+        return KafkaTaskSupplier.getInstance( TOPIC,2, properties );
 
     }
 
@@ -187,7 +185,7 @@ public class FunctionalTest {
         Map<String, DataPointerFactory> factories = new HashMap<>();
         factories.put( "const", new ConstDataPointerFactory() );
 
-        Validator validator = new Validator( new TaskSupplier(new CommandLineValidationTaskDescriptionSupplier(), new DataPointerFactories( factories )), getPrinter());
+        Validator validator = new Validator( new TaskSupplier(new CommandLineTaskSupplier(), new DataPointerFactories( factories )), getPrinter());
 
         validator.start();
 

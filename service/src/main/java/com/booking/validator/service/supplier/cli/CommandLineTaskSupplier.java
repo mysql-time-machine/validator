@@ -1,4 +1,4 @@
-package com.booking.validator.service.task.cli;
+package com.booking.validator.service.supplier.cli;
 
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskV1;

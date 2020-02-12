@@ -1,7 +1,7 @@
 package com.booking.validator.service;
 
 
-import com.booking.validator.service.task.ValidationTaskResult;
+import com.booking.validator.task.TaskComparisonResult;
 import com.booking.validator.utils.ConcurrentPipeline;
 import com.booking.validator.utils.Service;
 
@@ -15,13 +15,13 @@ import java.util.function.Supplier;
  */
 public class Validator implements Service {
 
-    private final Supplier<? extends Supplier<CompletableFuture<ValidationTaskResult>>> taskSupplier;
+    private final Supplier<? extends Supplier<CompletableFuture<TaskComparisonResult>>> taskSupplier;
 
-    private final BiConsumer<ValidationTaskResult, Throwable> resultConsumer;
+    private final BiConsumer<TaskComparisonResult, Throwable> resultConsumer;
 
-    private final ConcurrentPipeline<ValidationTaskResult> pipeline;
+    private final ConcurrentPipeline<TaskComparisonResult> pipeline;
 
-    public Validator(Supplier<? extends Supplier<CompletableFuture<ValidationTaskResult>>> taskSupplier, BiConsumer<ValidationTaskResult, Throwable> resultConsumer) {
+    public Validator(Supplier<? extends Supplier<CompletableFuture<TaskComparisonResult>>> taskSupplier, BiConsumer<TaskComparisonResult, Throwable> resultConsumer) {
 
         this.taskSupplier = taskSupplier;
 
