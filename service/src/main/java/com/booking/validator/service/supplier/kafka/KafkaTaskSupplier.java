@@ -1,6 +1,7 @@
 package com.booking.validator.service.task.kafka;
 
-import com.booking.validator.service.protocol.ValidationTaskDescription;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 /**
  * Created by psalimov on 11/21/16.
  */
-public class KafkaValidationTaskDescriptionSupplier implements Supplier<ValidationTaskDescription>, Service {
+public class KafkaTaskSupplier implements Supplier<Task>, Service {
 
     private class Fetcher implements Runnable {
 
@@ -36,12 +37,14 @@ public class KafkaValidationTaskDescriptionSupplier implements Supplier<Validati
 
                         try {
 
-                            ConsumerRecords<String, ValidationTaskDescription> records = consumer.poll(100);
+                            ConsumerRecords<String, Task> records = consumer.poll(100);
 
                             droppedRecords = records.count();
 
-                            for (ConsumerRecord<String, ValidationTaskDescription> record : records) {
-                                record.value().setId(record.key());
+                            for (ConsumerRecord<String, Task> record : records) {
+                                if (record.value() instanceof TaskV1) {
+                                    ((TaskV1) record.value()).setId(record.key());
+                                }
                                 buffer.put(record.value());
                                 droppedRecords--;
 
@@ -96,37 +99,37 @@ public class KafkaValidationTaskDescriptionSupplier implements Supplier<Validati
     private static final int PAUSED = 1;
     private static final int STOPPED = 2;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaValidationTaskDescriptionSupplier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTaskSupplier.class);
 
-    private final KafkaConsumer<String, ValidationTaskDescription> consumer;
+    private final KafkaConsumer<String, Task> consumer;
 
-    private final BlockingQueue<ValidationTaskDescription> buffer;
+    private final BlockingQueue<Task> buffer;
 
     private Thread fetcher;
 
     private final Object lock = new Object();
     private volatile int state;
 
-    public static KafkaValidationTaskDescriptionSupplier getInstance(String topic, int bufferSize, Properties kafkaProperties){
+    public static KafkaTaskSupplier getInstance(String topic, int bufferSize, Properties kafkaProperties){
 
         if (topic == null || topic.isEmpty()) throw new IllegalArgumentException("No topic is given for Kafka consumer");
 
-        KafkaConsumer<String, ValidationTaskDescription> consumer = new KafkaConsumer<>( kafkaProperties, new StringDeserializer(), new ValidationTaskDescriptionDeserializer() );
+        KafkaConsumer<String, Task> consumer = new KafkaConsumer<String, Task>( kafkaProperties, new StringDeserializer(), new KafkaTaskDeserializer());
 
         consumer.subscribe( Arrays.asList(topic) );
 
-        return new KafkaValidationTaskDescriptionSupplier( consumer, bufferSize );
+        return new KafkaTaskSupplier( consumer, bufferSize );
 
     }
 
-    public KafkaValidationTaskDescriptionSupplier(KafkaConsumer<String, ValidationTaskDescription> consumer, int bufferSize) {
+    public KafkaTaskSupplier(KafkaConsumer<String, Task> consumer, int bufferSize) {
         this.consumer = consumer;
         buffer = new ArrayBlockingQueue<>(bufferSize);
     }
 
 
     @Override
-    public ValidationTaskDescription get() {
+    public Task get() {
 
         try {
 

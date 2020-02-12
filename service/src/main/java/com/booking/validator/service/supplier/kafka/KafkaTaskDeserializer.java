@@ -1,6 +1,7 @@
 package com.booking.validator.service.task.kafka;
 
-import com.booking.validator.service.protocol.ValidationTaskDescription;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskV1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
@@ -12,9 +13,9 @@ import java.util.Map;
 /**
  * Created by psalimov on 10/3/16.
  */
-public class ValidationTaskDescriptionDeserializer implements Deserializer<ValidationTaskDescription> {
+public class KafkaTaskDeserializer implements Deserializer<Task> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidationTaskDescriptionDeserializer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTaskDeserializer.class);
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -22,11 +23,11 @@ public class ValidationTaskDescriptionDeserializer implements Deserializer<Valid
     public void configure(Map<String, ?> map, boolean b) {}
 
     @Override
-    public ValidationTaskDescription deserialize(String id, byte[] bytes) {
+    public Task deserialize(String id, byte[] bytes) {
 
         try {
 
-            ValidationTaskDescription task = mapper.readValue(bytes, ValidationTaskDescription.class);
+            Task task = mapper.readValue(bytes, TaskV1.class);
 
             return task;
 

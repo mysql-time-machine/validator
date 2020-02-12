@@ -1,6 +1,7 @@
 package com.booking.validator.service.task.cli;
 
-import com.booking.validator.service.protocol.ValidationTaskDescription;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskV1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -9,12 +10,12 @@ import java.util.function.Supplier;
 /**
  * Created by psalimov on 9/21/16.
  */
-public class CommandLineValidationTaskDescriptionSupplier implements Supplier<ValidationTaskDescription> {
+public class CommandLineTaskSupplier implements Supplier<Task> {
 
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public synchronized ValidationTaskDescription get() {
+    public synchronized Task get() {
 
         try {
 
@@ -23,7 +24,7 @@ public class CommandLineValidationTaskDescriptionSupplier implements Supplier<Va
                 input = System.console().readLine();
             }
 
-            return mapper.readValue( input , ValidationTaskDescription.class);
+            return mapper.readValue( input , TaskV1.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
