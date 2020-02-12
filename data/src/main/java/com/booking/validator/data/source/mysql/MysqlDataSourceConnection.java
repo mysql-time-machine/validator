@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class MysqlDataSourceConnection implements DataSourceConnection {
 
-
     public MysqlDataSourceConnection(Map<String, String> configuration) {
     }
 

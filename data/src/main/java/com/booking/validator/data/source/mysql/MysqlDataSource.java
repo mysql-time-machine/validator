@@ -41,4 +41,8 @@ public class MysqlDataSource implements DataSource {
     public DataSourceQueryOptions getOptions() {
         return options;
     }
+
+    public String toString() {
+        return String.format("[name=%s type=%s]", getName(), getType());
+    }
 }
