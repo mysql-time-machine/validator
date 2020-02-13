@@ -1,9 +1,15 @@
 package com.booking.validator.data.source;
 
 import com.booking.validator.data.Data;
+import com.booking.validator.data.transformation.TransformationFactory;
 
 import java.util.Map;
 
+/**
+ * Created by dbatheja on 12/02/20.
+ *
+ * This is used to have a single client connection per Data Source from Validator Config
+ */
 public class ActiveDataSourceConnections {
     private Map<String, DataSourceConnection> connections;
     private static final ActiveDataSourceConnections instance = new ActiveDataSourceConnections();
@@ -31,7 +37,7 @@ public class ActiveDataSourceConnections {
 
     public Data query(DataSource source) {
         DataSourceConnection conn = get(source.getName());
-        return conn.query(source.getOptions());
+        return TransformationFactory.applyTransformations(conn.query(source.getOptions()), source.getOptions().getTransformations());
     }
 
     public void closeAll() {

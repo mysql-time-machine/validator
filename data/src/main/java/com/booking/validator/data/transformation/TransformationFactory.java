@@ -1,5 +1,6 @@
 package com.booking.validator.data.transformation;
 
+import com.booking.validator.data.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Created by dbatheja on 10/02/20.
+ */
 public class TransformationFactory {
     static final Logger LOGGER = LoggerFactory.getLogger(TransformationFactory.class);
 
@@ -29,6 +33,21 @@ public class TransformationFactory {
             }
         }
         return ret;
+    }
+
+    public static Data applyTransformations(Data data, List<Transformation> transformations) {
+        Data dnow = data;
+        for (Transformation transformation : transformations) {
+            switch (transformation.getType()){
+                case IGNORE_COLUMNS:
+                    dnow = transformation.apply(dnow);
+                case ALIAS_COLUMNS:
+                    dnow = transformation.apply(dnow);
+                default:
+                    LOGGER.warn("Transformation type not found.");
+            }
+        }
+        return dnow;
     }
 
 }
