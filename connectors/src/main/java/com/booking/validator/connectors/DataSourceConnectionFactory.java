@@ -1,8 +1,8 @@
-package com.booking.validator.data.source;
+package com.booking.validator.connectors;
 
-import com.booking.validator.data.source.constant.ConstantDataSourceConnection;
-import com.booking.validator.data.source.mysql.MysqlDataSourceConnection;
-import com.booking.validator.data.source.mysql.MysqlDataSourceQueryOptions;
+import com.booking.validator.data.source.Types;
+import com.booking.validator.connectors.constant.ConstantDataSourceConnection;
+import com.booking.validator.connectors.mysql.MysqlDataSourceConnection;
 
 import java.util.Map;
 
