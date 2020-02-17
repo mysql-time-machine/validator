@@ -3,7 +3,7 @@ package com.booking.validator.task;
 import com.booking.validator.data.Data;
 import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
 
-public class TaskComparisonResultV1 {
+public class TaskComparisonResultV1 implements TaskComparisonResult {
 
         @JsonProperty("discrepancy")
         private final String discrepancyString;
@@ -19,7 +19,7 @@ public class TaskComparisonResultV1 {
             this.task = task;
             this.discrepancy = discrepancy;
             this.error = error;
-            this.discrepancyString = discrepancy.toString();
+            this.discrepancyString = discrepancy != null ? discrepancy.toString() : "";
         }
 
 

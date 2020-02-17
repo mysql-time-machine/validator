@@ -26,6 +26,7 @@ public class TransformationFactory {
 
     public static List<Transformation> getTransformations(Map<String, Object> transformations) {
         ArrayList<Transformation> ret= new ArrayList<Transformation>();
+        if(transformations == null) return ret;
         for(Map.Entry<String,Object> entry : transformations.entrySet()) {
             Transformation transformation = getTransformation(entry.getKey(), entry.getValue());
             if (transformation != null) {

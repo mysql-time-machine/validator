@@ -6,6 +6,7 @@ import com.booking.validator.data.source.DataSource;
 import org.apache.htrace.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -15,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 public class TaskV1 implements Task {
 
     @JsonProperty("v")
-    private final String v="V1";
+    private final String v="v1";
 
     @JsonProperty("extra")
     private Map<String, Object> extra;
@@ -32,10 +33,6 @@ public class TaskV1 implements Task {
     @JsonIgnore
     @JsonProperty("create_time")
     private long createTime;
-
-    @JsonIgnore
-    @JsonProperty("id")
-    private String id;
 
     @JsonIgnore
     @JsonProperty("tries_count")
@@ -57,37 +54,27 @@ public class TaskV1 implements Task {
         return target;
     }
 
+    @JsonIgnore
     public long getCreateTime() {
         return createTime;
     }
 
+    @JsonIgnore
     public int getTriesCount() {
         return triesCount;
     }
 
+    @JsonIgnore
     public int getRetriesCount() {
         return triesCount - 1;
     }
 
-    public void setTriesCount(int triesCount) {
-        this.triesCount = triesCount;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public TaskV1(){}
 
     public TaskV1(String tag, DataSource source, DataSource target, Map<String, Object> extra) {
-        this.tag = tag;
         this.source = requireNonNull(source);
         this.target = requireNonNull(target);
-        this.extra = extra;
+        this.tag = tag;
+        this.extra = extra != null ? extra : new HashMap<String, Object>();
         this.createTime = System.currentTimeMillis();
         this.triesCount = 0;
     }
@@ -105,7 +92,7 @@ public class TaskV1 implements Task {
         return CompletableFuture.supplyAsync(getSupplier(source))
                 .thenCombineAsync(
                         CompletableFuture.supplyAsync(getSupplier(target)), this::validate)
-                .exceptionally( t -> (TaskComparisonResult) new TaskComparisonResultV1(this, null, t));
+                .exceptionally( t -> new TaskComparisonResultV1(this, null, t));
     }
 
     private TaskComparisonResult validate(Data sourceData, Data targetData){

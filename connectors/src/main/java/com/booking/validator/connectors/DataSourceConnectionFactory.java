@@ -1,5 +1,6 @@
 package com.booking.validator.data.source;
 
+import com.booking.validator.data.source.constant.ConstantDataSourceConnection;
 import com.booking.validator.data.source.mysql.MysqlDataSourceConnection;
 import com.booking.validator.data.source.mysql.MysqlDataSourceQueryOptions;
 
@@ -13,6 +14,8 @@ import java.util.Map;
 public class DataSourceConnectionFactory {
     static DataSourceConnection initConnection(String type, Map<String, String> configuration){
         switch(Types.fromString(type)){
+            case CONSTANT:
+                return new ConstantDataSourceConnection(configuration);
             case MYSQL:
                 return new MysqlDataSourceConnection(configuration);
             default:

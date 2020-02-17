@@ -3,6 +3,7 @@ package com.booking.validator.data.source;
 import com.booking.validator.data.Data;
 import com.booking.validator.data.transformation.TransformationFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -13,7 +14,9 @@ import java.util.Map;
 public class ActiveDataSourceConnections {
     private Map<String, DataSourceConnection> connections;
     private static final ActiveDataSourceConnections instance = new ActiveDataSourceConnections();
-    private ActiveDataSourceConnections(){}
+    private ActiveDataSourceConnections(){
+        connections = new HashMap<>();
+    }
     public static ActiveDataSourceConnections getInstance() { return instance; }
 
     public void add(String name, String type, Map<String, String> configuration) {
