@@ -28,7 +28,11 @@ public class MysqlDataSourceQueryOptions implements DataSourceQueryOptions {
         this.transformations = transformations;
     }
 
-    public List<Transformation> getTransformations() {
-        return TransformationFactory.getTransformations(transformations);
+    public String getTableName() { return tableName; }
+
+    public Map<String, Object> getPrimaryKeys() { return primaryKeys; }
+
+    public Map<String, Object> getTransformations() {
+        return transformations;
     }
 }

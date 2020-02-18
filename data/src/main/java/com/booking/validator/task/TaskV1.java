@@ -1,15 +1,12 @@
 package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
-import com.booking.validator.data.source.ActiveDataSourceConnections;
 import com.booking.validator.data.source.DataSource;
 import org.apache.htrace.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -79,23 +76,8 @@ public class TaskV1 implements Task {
         this.triesCount = 0;
     }
 
-    private Supplier<Data> getSupplier(DataSource dataSource) {
-        return new Supplier<Data>() {
-            @Override
-            public Data get() {
-                return ActiveDataSourceConnections.getInstance().query(dataSource);
-            }
-        };
-    }
-
-    public CompletableFuture<TaskComparisonResult> get(){
-        return CompletableFuture.supplyAsync(getSupplier(source))
-                .thenCombineAsync(
-                        CompletableFuture.supplyAsync(getSupplier(target)), this::validate)
-                .exceptionally( t -> new TaskComparisonResultV1(this, null, t));
-    }
-
-    private TaskComparisonResult validate(Data sourceData, Data targetData){
+    @Override
+    public TaskComparisonResult validate(Data sourceData, Data targetData) {
         triesCount ++;
         return (TaskComparisonResult) new TaskComparisonResultV1(this, Data.discrepancy(sourceData, targetData), null);
     }

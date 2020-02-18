@@ -5,7 +5,9 @@ package com.booking.validator.data.transformation;
  */
 public enum Types {
     IGNORE_COLUMNS("ignore_columns"),
-    ALIAS_COLUMNS("alias_columns");
+    ALIAS_COLUMNS("alias_columns"),
+    MAP_NULL_COLUMNS("map_null_columns"),
+    TIMESTAMPS_TO_EPOCHS("timestamps_to_epochs");
 
 
     private String value;

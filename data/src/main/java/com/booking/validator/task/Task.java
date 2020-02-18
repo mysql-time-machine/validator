@@ -1,8 +1,7 @@
 package com.booking.validator.task;
 
-
-import java.util.concurrent.CompletableFuture;
+import com.booking.validator.data.Data;
 
 public interface Task {
-    CompletableFuture<TaskComparisonResult> get();
+    TaskComparisonResult validate(Data sourceData, Data targetData);
 }

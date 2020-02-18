@@ -30,7 +30,7 @@ public class ConstantDataSourceQueryOptions implements DataSourceQueryOptions {
         return data;
     }
 
-    public List<Transformation> getTransformations() {
-        return TransformationFactory.getTransformations(transformations);
+    public Map<String, Object> getTransformations() {
+        return transformations;
     }
 }

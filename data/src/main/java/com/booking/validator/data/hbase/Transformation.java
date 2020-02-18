@@ -36,6 +36,7 @@ public class Transformation {
         Map<String,Object> row = new HashMap<>();
 
         // the row status "D" means the row should be treated as deleted
+        // Should be handled in client/TaskProvider
         if ( Arrays.equals(Bytes.toBytes("D"),familyMap.remove(Bytes.toBytes(rowStatusColumn)))) return null;
 
         for (Map.Entry<byte[],byte[]> entry : familyMap.entrySet()){

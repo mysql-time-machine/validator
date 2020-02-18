@@ -4,9 +4,8 @@ import com.booking.validator.data.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Created by dbatheja on 10/02/20.
@@ -14,41 +13,29 @@ import java.util.Map;
 public class TransformationFactory {
     static final Logger LOGGER = LoggerFactory.getLogger(TransformationFactory.class);
 
-    public static Transformation getTransformation(String key, Object value) {
-        switch(Types.fromString(key)){
-            case IGNORE_COLUMNS:
-                return new IgnoreColumnsTransformation(value);
-            default:
-                LOGGER.warn("Transformation not found for:", key);
-                return null;
-        }
-    }
+    private static LinkedHashMap<Types, Transformation> prioritizedTransformationMap =
+            new LinkedHashMap<Types, Transformation>(){{
+        put(Types.IGNORE_COLUMNS, IgnoreColumnsTransformation.getInstance());
+        put(Types.TIMESTAMPS_TO_EPOCHS, TimestampsToEpochsTransformation.getInstance());
+        put(Types.MAP_NULL_COLUMNS, MapNullColumnsTransformation.getInstance());
+        put(Types.ALIAS_COLUMNS, AliasColumnsTransformation.getInstance());
+    }};
 
-    public static List<Transformation> getTransformations(Map<String, Object> transformations) {
-        ArrayList<Transformation> ret= new ArrayList<Transformation>();
+    public static Data applyTransformations(Data data, Map<String, Object> transformations) {
+        Data ret = data;
         if(transformations == null) return ret;
-        for(Map.Entry<String,Object> entry : transformations.entrySet()) {
-            Transformation transformation = getTransformation(entry.getKey(), entry.getValue());
-            if (transformation != null) {
-                ret.add(transformation);
+        for(Types key : prioritizedTransformationMap.keySet()) {
+            for(Map.Entry<String,Object> entry : transformations.entrySet()) {
+                if (entry.getKey().equals(key.getValue())) {
+                    Transformation transformation = prioritizedTransformationMap.getOrDefault(key, null);
+                    if (transformation != null) {
+                        ret = transformation.apply(ret, entry.getValue());
+                    } else {
+                        LOGGER.warn("Transformation not found of type: " + entry.getKey());
+                    }
+                }
             }
         }
         return ret;
     }
-
-    public static Data applyTransformations(Data data, List<Transformation> transformations) {
-        Data dnow = data;
-        for (Transformation transformation : transformations) {
-            switch (transformation.getType()){
-                case IGNORE_COLUMNS:
-                    dnow = transformation.apply(dnow);
-                case ALIAS_COLUMNS:
-                    dnow = transformation.apply(dnow);
-                default:
-                    LOGGER.warn("Transformation type not found.");
-            }
-        }
-        return dnow;
-    }
-
 }
