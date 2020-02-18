@@ -1,11 +1,9 @@
 package com.booking.validator.service;
 
-
-
-import com.booking.validator.data.source.ActiveDataSourceConnections;
-
-import com.booking.validator.service.supplier.cli.CommandLineTaskSupplier;
-import com.booking.validator.service.supplier.kafka.KafkaTaskSupplier;
+import com.booking.validator.connectors.ActiveDataSourceConnections;
+import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
+import com.booking.validator.service.supplier.task.cli.CommandLineTaskSupplier;
+import com.booking.validator.service.supplier.task.kafka.KafkaTaskSupplier;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
 import com.booking.validator.utils.CommandLineArguments;
@@ -136,7 +134,7 @@ public class Launcher {
     }
 
 
-    private RetryFriendlySupplier<Task> getTaskSupplier(){
+    private RetryFriendlySupplier<QueryConnectorsForTask> getTaskSupplier(){
 
         ValidatorConfiguration.TaskSupplier supplierDescription = validatorConfiguration.getTaskSupplier();
 
@@ -157,7 +155,7 @@ public class Launcher {
 
         }
 
-        Supplier<Task> taskSupplier = new TaskSupplier(descriptionSupplier);
+        Supplier<QueryConnectorsForTask> taskSupplier = new TaskSupplier(descriptionSupplier);
 
         RetryPolicy policy = validatorConfiguration.getRetryPolicy();
 

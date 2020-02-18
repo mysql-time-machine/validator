@@ -1,4 +1,4 @@
-package com.booking.validator.service.supplier.cli;
+package com.booking.validator.service.supplier.task.cli;
 
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskV1;
@@ -18,12 +18,10 @@ public class CommandLineTaskSupplier implements Supplier<Task> {
     public synchronized Task get() {
 
         try {
-
             String input = null;
             while (input == null || input.equals("")) {
                 input = System.console().readLine();
             }
-
             return mapper.readValue( input , TaskV1.class);
         } catch (IOException e) {
             throw new RuntimeException(e);

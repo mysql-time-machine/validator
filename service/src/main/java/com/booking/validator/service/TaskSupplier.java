@@ -1,5 +1,6 @@
 package com.booking.validator.service;
 
+import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
@@ -9,7 +10,7 @@ import java.util.function.Supplier;
 /**
  * Created by psalimov on 9/16/16.
  */
-public class TaskSupplier implements Supplier<Task>, Service {
+public class TaskSupplier implements Supplier<QueryConnectorsForTask>, Service {
 
     private final Supplier<Task> fetcher;
 
@@ -23,9 +24,9 @@ public class TaskSupplier implements Supplier<Task>, Service {
     }
 
     @Override
-    public Task get() {
+    public QueryConnectorsForTask get() {
         Task task = fetcher.get();
         TaskV1 taskV1 = (TaskV1) task;
-        return taskV1;
+        return new QueryConnectorsForTask(taskV1);
     }
 }

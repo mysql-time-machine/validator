@@ -1,4 +1,4 @@
-package com.booking.validator.service.supplier.kafka;
+package com.booking.validator.service.supplier.task.kafka;
 
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskV1;
