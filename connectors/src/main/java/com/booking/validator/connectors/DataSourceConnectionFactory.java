@@ -1,5 +1,6 @@
 package com.booking.validator.connectors;
 
+import com.booking.validator.connectors.hbase.HbaseDataSourceConnection;
 import com.booking.validator.data.source.Types;
 import com.booking.validator.connectors.constant.ConstantDataSourceConnection;
 import com.booking.validator.connectors.mysql.MysqlDataSourceConnection;
@@ -18,6 +19,8 @@ public class DataSourceConnectionFactory {
                 return new ConstantDataSourceConnection(configuration);
             case MYSQL:
                 return new MysqlDataSourceConnection(configuration);
+            case HBASE:
+                return new HbaseDataSourceConnection(configuration);
             default:
                 return null;
         }

@@ -21,6 +21,8 @@ import java.util.stream.Stream;
 
 /**
  * Created by dbatheja on 10/02/20.
+ * Refactored and used @psalimov's existing MySQL-connector implementation
+ *
  */
 public class MysqlDataSourceConnection implements DataSourceConnection {
     static final Logger LOGGER = LoggerFactory.getLogger(MysqlDataSourceConnection.class);
@@ -55,7 +57,7 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
         source.addConnectionProperty("tinyInt1isBit", "false");
     }
 
-    public void initQuote() {
+    public void initQuote() throws RuntimeException {
         try (Connection connection = source.getConnection()) {
             quote = connection.getMetaData().getIdentifierQuoteString();
         } catch (SQLException e) {
@@ -100,8 +102,8 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
     @Override
     public Data query(DataSourceQueryOptions options) {
         MysqlDataSourceQueryOptions queryOptions = (MysqlDataSourceQueryOptions) options;
-        List<String> columns = new ArrayList<String>();
-        List<Object> values = new ArrayList<Object>();
+        List<String> columns = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
         queryOptions.getPrimaryKeys().forEach((key, obj)->{
             columns.add(key);
             values.add(values);
@@ -109,7 +111,7 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
         String condition = buildQueryConditionPart(columns, quote);
         String selectAllQuery = buildSelectAllQuery(queryOptions.getTableName(), condition);
         String selectDoubleQuery = buildSelectDoubleColumnQuery(queryOptions.getTableName(), condition, quote);
-        Iterable<Object> args = (Iterable<Object>) values;
+        Iterable<Object> args = values;
 
         return resolve(selectAllQuery, selectDoubleQuery, args);
     }
@@ -208,7 +210,7 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
 
     }
 
-    public Data transform(MysqlCell[] cells) throws SQLException{
+    public Data transform(MysqlCell[] cells) {
         Map<String,Object> result = new HashMap<>();
         for (MysqlCell cell : cells){
 
