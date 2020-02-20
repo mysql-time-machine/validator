@@ -1,6 +1,7 @@
 package com.booking.validator.service;
 
 
+import com.booking.validator.connectors.ActiveDataSourceConnections;
 import com.booking.validator.task.TaskComparisonResult;
 import com.booking.validator.utils.ConcurrentPipeline;
 import com.booking.validator.utils.Service;
@@ -43,7 +44,7 @@ public class Validator implements Service {
     public void stop() {
 
         Arrays.asList(taskSupplier,resultConsumer).forEach( x -> {if (x instanceof Service) ((Service) x).stop();}  );
-
+        ActiveDataSourceConnections.getInstance().closeAll();
         pipeline.stop();
 
     }
