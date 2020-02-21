@@ -3,7 +3,7 @@ package com.booking.validator.connectors.constant;
 import com.booking.validator.connectors.DataSourceConnection;
 import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSourceQueryOptions;
-import com.booking.validator.data.source.constant.ConstantDataSourceQueryOptions;
+import com.booking.validator.data.source.constant.ConstantQueryOptions;
 
 import java.util.Map;
 
@@ -18,7 +18,7 @@ public class ConstantDataSourceConnection implements DataSourceConnection {
 
     @Override
     public Data query(DataSourceQueryOptions options) {
-        return new Data(((ConstantDataSourceQueryOptions) options).getData());
+        return new Data(((ConstantQueryOptions) options).getData());
     }
 
     @Override

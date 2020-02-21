@@ -3,7 +3,7 @@ package com.booking.validator.connectors.hbase;
 import com.booking.validator.connectors.DataSourceConnection;
 import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSourceQueryOptions;
-import com.booking.validator.data.source.hbase.HbaseDataSourceQueryOptions;
+import com.booking.validator.data.source.hbase.HbaseQueryOptions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
@@ -23,6 +23,7 @@ public class HbaseDataSourceConnection implements DataSourceConnection {
     static final Logger LOGGER = LoggerFactory.getLogger(HbaseDataSourceConnection.class);
 
     private Connection connection;
+    protected String name = "hbase";
     public HbaseDataSourceConnection(Map<String, String> config) {
         initConnection(config);
     }
@@ -33,13 +34,13 @@ public class HbaseDataSourceConnection implements DataSourceConnection {
         try {
             connection = ConnectionFactory.createConnection(configuration);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create hbase connection", e);
+            throw new RuntimeException("Failed to create " + this.name + " connection", e);
         }
     }
 
     @Override
     public Data query(DataSourceQueryOptions options) {
-        HbaseDataSourceQueryOptions queryOptions = (HbaseDataSourceQueryOptions) options;
+        HbaseQueryOptions queryOptions = (HbaseQueryOptions) options;
         String table = queryOptions.getTableName();
         String row = queryOptions.getRow();
         String cf = queryOptions.getColumnFamily();
