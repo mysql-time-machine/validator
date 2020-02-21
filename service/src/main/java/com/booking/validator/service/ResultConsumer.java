@@ -74,14 +74,13 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
             Throwable error = result.getError();
 
-            String id = ((TaskV1) result.getTask()).getId();
             String tag = ((TaskV1) result.getTask()).getTag();
 
             if (tag == null || tag.isEmpty()) tag = "no-tag";
 
             if (error != null) {
 
-                LOGGER.error("Task {} tagged {}, {} processing error:", id, tag, result.getTask(), error);
+                LOGGER.error("Task tagged {}, {} processing error:", tag, result.getTask(), error);
 
                 registry.meter(name("tasks", tag, "failed")).mark();
 
@@ -92,7 +91,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
             if (result.isOk()) {
 
-                LOGGER.info("Task {} tagged {} result is positive after {} tries, processed in {}s", id, tag,
+                LOGGER.info("Task tagged {} result is positive after {} tries, processed in {}s", tag,
                         task.getTriesCount(), getTimeElapsedMillis(task.getCreateTime())/1000);
 
                 registry.meter(name("tasks", tag, "positive")).mark();
@@ -102,8 +101,8 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
                 if (task.getRetriesCount()>= retryPolicy.getRetriesLimit()) {
 
-                    LOGGER.warn("Task {} tagged {}, {} result is negative: {} after {} tries, processed in {}s",
-                            id, tag, result.getTask(), result.getDiscrepancy(), task.getTriesCount(),
+                    LOGGER.warn("Task tagged {}, {} result is negative: {} after {} tries, processed in {}s",
+                            tag, result.getTask(), result.getDiscrepancy(), task.getTriesCount(),
                             getTimeElapsedMillis(task.getCreateTime())/1000);
 
                     registry.meter(name("tasks", tag, "negative")).mark();
@@ -111,8 +110,8 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
                 } else {
 
-                    LOGGER.info("Task {} tagged {} result is negative: {}, will retry {} time in {}s",
-                            id, tag, result.getDiscrepancy(), task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
+                    LOGGER.info("Task tagged {} result is negative: {}, will retry {} time in {}s",
+                            tag, result.getDiscrepancy(), task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
 
                     registry.meter(name("tasks", tag, "retries")).mark();
 
