@@ -1,7 +1,6 @@
 package com.booking.validator.data.source.mysql;
 
 import com.booking.validator.data.source.DataSourceQueryOptions;
-import com.booking.validator.data.source.Types;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

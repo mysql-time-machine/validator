@@ -1,11 +1,7 @@
 package com.booking.validator.data.source;
 
-import com.booking.validator.data.Data;
-import com.booking.validator.data.source.constant.ConstantQueryOptions;
-import com.booking.validator.data.source.mysql.MysqQuerylOptions;
-import org.apache.htrace.fasterxml.jackson.annotation.*;
-
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static java.util.Objects.requireNonNull;
 
@@ -23,24 +19,11 @@ public class DataSource {
     @JsonCreator
     public DataSource(@JsonProperty("name") final String name,
                       @JsonProperty("type") final String type,
-                      @JsonProperty("options") final Map<String, Object> options) {
-        this.name = requireNonNull(name);
-        this.type = requireNonNull(Types.fromString(type));
-        this.options = requireNonNull(QueryOptionsFactory.get(Types.fromString(type), options));
-    }
-
-    @JsonCreator
-    public DataSource(@JsonProperty("name") final String name,
-                      @JsonProperty("type") final String type,
                       @JsonProperty("options") final DataSourceQueryOptions options) {
         this.name = requireNonNull(name);
         this.type = requireNonNull(Types.fromString(type));
         this.options = requireNonNull(options);
     }
-
-    // FOR INTERNAL JSON DESERIALIZATION ONLY
-    // DON'T USE IT FOR TASK CREATION
-    public DataSource() {}
 
     public String getName() {
         return name;

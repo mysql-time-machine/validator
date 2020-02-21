@@ -1,14 +1,10 @@
 package com.booking.validator.data.source.constant;
 
 import com.booking.validator.data.source.DataSourceQueryOptions;
-import com.booking.validator.data.source.Types;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
-
-import static com.booking.validator.data.source.constant.ConstantQueryOptions.Constants.DATA;
-import static com.booking.validator.data.source.constant.ConstantQueryOptions.Constants.TRANSFORMATIONS;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -22,13 +18,6 @@ public class ConstantQueryOptions extends DataSourceQueryOptions {
 
     private Map<String, Object> data;
     private Map<String, Object> transformations;
-
-    public static ConstantQueryOptions build(Map<String, Object> options) {
-        return new ConstantQueryOptions(Types.CONSTANT.getValue(),
-                                    (Map<String, Object>) options.getOrDefault(DATA,null),
-                                    (Map<String, Object>) options.getOrDefault(TRANSFORMATIONS,null));
-
-    }
 
     @JsonCreator
     public ConstantQueryOptions(@JsonProperty("type") String type, @JsonProperty("data") Map<String, Object> data, @JsonProperty("transformations") Map<String, Object> transformations) {

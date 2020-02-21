@@ -10,6 +10,6 @@ import java.util.Map;
  */
 public class BigtableQueryOptions extends HbaseQueryOptions {
     public BigtableQueryOptions(String tableName, String row, String columnFamily, Map<String, Object> transformations) {
-        super(tableName, row, columnFamily, transformations, Types.BIGTABLE.getValue());
+        super(Types.BIGTABLE.getValue(), tableName, row, columnFamily, transformations);
     }
 }
