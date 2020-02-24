@@ -48,8 +48,8 @@ public class MapNullColumnsTransformation implements Transformation {
     }
 
     @Override
-    public Types getType() {
-        return Types.MAP_NULL_COLUMNS;
+    public TransformationTypes getType() {
+        return TransformationTypes.MAP_NULL_COLUMNS;
     }
 
 }

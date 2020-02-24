@@ -20,7 +20,7 @@ public class ActiveDataSourceConnections {
     }
     public static ActiveDataSourceConnections getInstance() { return instance; }
 
-    public void add(String name, String type, Map<String, String> configuration) {
+    public ActiveDataSourceConnections add(String name, String type, Map<String, String> configuration) {
         DataSourceConnection conn = DataSourceConnectionFactory.initConnection(type, configuration);
         if (connections.containsKey(name)){
             throw new RuntimeException("DataSource name:" + name + " already exists in active connections.");
@@ -29,6 +29,7 @@ public class ActiveDataSourceConnections {
         } else {
             connections.put(name, conn);
         }
+        return instance;
     }
 
     public DataSourceConnection get(String name) {

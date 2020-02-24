@@ -35,8 +35,8 @@ public class AliasColumnsTransformation implements Transformation {
     }
 
     @Override
-    public Types getType() {
-        return Types.ALIAS_COLUMNS;
+    public TransformationTypes getType() {
+        return TransformationTypes.ALIAS_COLUMNS;
     }
 
 }

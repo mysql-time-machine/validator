@@ -62,8 +62,8 @@ public class TimestampsToEpochsTransformation implements Transformation {
     }
 
     @Override
-    public Types getType() {
-        return Types.TIMESTAMPS_TO_EPOCHS;
+    public TransformationTypes getType() {
+        return TransformationTypes.TIMESTAMPS_TO_EPOCHS;
     }
 
 }

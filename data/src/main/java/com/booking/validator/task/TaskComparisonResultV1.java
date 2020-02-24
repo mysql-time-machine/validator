@@ -1,7 +1,7 @@
 package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
-import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TaskComparisonResultV1 implements TaskComparisonResult {
 

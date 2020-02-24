@@ -39,7 +39,7 @@ public class IgnoreColumnsTransformation implements Transformation {
     }
 
     @Override
-    public Types getType() {
-        return Types.IGNORE_COLUMNS;
+    public TransformationTypes getType() {
+        return TransformationTypes.IGNORE_COLUMNS;
     }
 }

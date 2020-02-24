@@ -2,11 +2,10 @@ package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSource;
-import org.apache.htrace.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.htrace.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;

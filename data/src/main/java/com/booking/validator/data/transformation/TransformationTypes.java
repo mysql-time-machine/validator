@@ -3,7 +3,7 @@ package com.booking.validator.data.transformation;
 /**
  * Created by dbatheja on 07/02/20.
  */
-public enum Types {
+public enum TransformationTypes {
     IGNORE_COLUMNS("ignore_columns"),
     ALIAS_COLUMNS("alias_columns"),
     MAP_NULL_COLUMNS("map_null_columns"),
@@ -12,7 +12,7 @@ public enum Types {
 
     private String value;
 
-    Types(String value) {
+    TransformationTypes(String value) {
         this.value = value;
     }
 
@@ -20,8 +20,8 @@ public enum Types {
         return value;
     }
 
-    public static Types fromString(String text) {
-        for (Types b : Types.values()) {
+    public static TransformationTypes fromString(String text) {
+        for (TransformationTypes b : TransformationTypes.values()) {
             if (b.getValue().equalsIgnoreCase(text)) {
                 return b;
             }

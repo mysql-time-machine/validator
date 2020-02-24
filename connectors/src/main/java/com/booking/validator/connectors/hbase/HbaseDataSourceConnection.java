@@ -27,6 +27,10 @@ public class HbaseDataSourceConnection implements DataSourceConnection {
     public HbaseDataSourceConnection(Map<String, String> config) {
         initConnection(config);
     }
+    public HbaseDataSourceConnection(Map<String, String> config, String name) {
+        this(config);
+        this.name = name;
+    }
 
     private void initConnection(Map<String, String> config) throws RuntimeException {
         Configuration configuration = HBaseConfiguration.create();
