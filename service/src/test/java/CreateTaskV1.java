@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class CreateTaskV1 {
     @Test
-    public void testCompareConstantDataSources() throws Exception {
+    public void testConstantDataSourceDeserialization() throws Exception {
         HashMap<String, Object> data = new HashMap<String, Object>();
         data.put("a", "a");
         DataSource dataSource = new DataSource(

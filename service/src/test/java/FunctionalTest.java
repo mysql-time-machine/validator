@@ -1,5 +1,4 @@
-import com.booking.validator.data.constant.ConstDataPointerFactory;
-import com.booking.validator.data.DataPointerFactory;
+import com.booking.validator.connectors.ActiveDataSourceConnections;
 import com.booking.validator.data.source.DataSource;
 import com.booking.validator.data.source.Types;
 import com.booking.validator.data.source.constant.ConstantQueryOptions;
@@ -194,8 +193,7 @@ public class FunctionalTest {
     @Test
     public void cliSupplierTest(){
 
-        Map<String, DataPointerFactory> factories = new HashMap<>();
-        factories.put( "const", new ConstDataPointerFactory() );
+        ActiveDataSourceConnections.getInstance().add("const", Types.CONSTANT.getValue(), null);
 
         Validator validator = new Validator( new TaskSupplier(new CommandLineTaskSupplier()), getPrinter());
 
@@ -211,12 +209,8 @@ public class FunctionalTest {
 
     @Test
     public void test(){
-
-        Map<String, DataPointerFactory> factories = new HashMap<>();
-        factories.put( "const", new ConstDataPointerFactory() );
-
+        ActiveDataSourceConnections.getInstance().add("const", Types.CONSTANT.getValue(), null);
         Validator validator = new Validator( new TaskSupplier( getSupplier() ), getPrinter() );
-
         validator.start();
 
         try {
