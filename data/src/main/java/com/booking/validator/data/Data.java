@@ -1,5 +1,7 @@
 package com.booking.validator.data;
 
+import com.booking.validator.data.mysql.Transformation;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,10 +69,15 @@ public class Data {
 
     private final Map<String, Object> row;
 
+    public Map<String, Object> getRow() {
+        return row;
+    }
+
     public Data(Map < String, Object > row) {
 
         if (row == null) throw new IllegalArgumentException();
 
         this.row = new HashMap<>(row);
     }
+
 }

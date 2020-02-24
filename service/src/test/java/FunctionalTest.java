@@ -1,12 +1,15 @@
-import com.booking.validator.data.constant.ConstDataPointerFactory;
-import com.booking.validator.data.DataPointerFactory;
-import com.booking.validator.service.DataPointerFactories;
-import com.booking.validator.service.task.ValidationTaskResult;
+import com.booking.validator.connectors.ActiveDataSourceConnections;
+import com.booking.validator.data.source.DataSource;
+import com.booking.validator.data.source.Types;
+import com.booking.validator.data.source.constant.ConstantQueryOptions;
 import com.booking.validator.service.Validator;
-import com.booking.validator.service.protocol.ValidationTaskDescription;
 import com.booking.validator.service.TaskSupplier;
-import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
-import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
+import com.booking.validator.service.supplier.task.cli.CommandLineTaskSupplier;
+import com.booking.validator.service.supplier.task.kafka.KafkaTaskSupplier;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskComparisonResult;
+import com.booking.validator.task.TaskComparisonResultV1;
+import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +41,7 @@ public class FunctionalTest {
     private KafkaServerStartable kafka;
     private Service producer;
 
-    private Supplier<ValidationTaskDescription> getSupplier(){
+    private Supplier<Task> getSupplier(){
 
 //        Map<String, String> constStorageDescription = new HashMap<>();
 //        constStorageDescription.put("type", "const");
@@ -70,7 +73,7 @@ public class FunctionalTest {
 
         configuration.entrySet().stream().forEach( x -> properties.setProperty(x.getKey(), x.getValue()) );
 
-        return KafkaValidationTaskDescriptionSupplier.getInstance( TOPIC,2, properties );
+        return KafkaTaskSupplier.getInstance( TOPIC,2, properties );
 
     }
 
@@ -104,8 +107,14 @@ public class FunctionalTest {
     private String task() throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(new ValidationTaskDescription(null,"const://value/?a=1&b=2","const://value/?a=1&b=2"));
-
+        HashMap<String, Object> data = new HashMap<String, Object>();
+        data.put("a", "a");
+        DataSource dataSource = new DataSource(
+                "constantSource",
+                Types.CONSTANT.getValue(),
+                new ConstantQueryOptions(Types.CONSTANT.getValue(), (Map<String, Object>)data, null));
+        Task taskV1 = new TaskV1("unit_test", dataSource, dataSource, null);
+        return mapper.writeValueAsString(taskV1);
     }
 
     private Service getKafkaProducer() {
@@ -169,13 +178,13 @@ public class FunctionalTest {
         if (producer != null) producer.stop();
     }
 
-    private BiConsumer<ValidationTaskResult, Throwable> getPrinter(){
+    private BiConsumer<TaskComparisonResult, Throwable> getPrinter(){
 
         return (x,t)-> {
             if (t!=null) {
                 System.out.println(t);
             } else {
-                System.out.println(x.isOk());
+                System.out.println(((TaskComparisonResultV1)x).isOk());
             }
         };
 
@@ -184,10 +193,9 @@ public class FunctionalTest {
     @Test
     public void cliSupplierTest(){
 
-        Map<String, DataPointerFactory> factories = new HashMap<>();
-        factories.put( "const", new ConstDataPointerFactory() );
+        ActiveDataSourceConnections.getInstance().add("const", Types.CONSTANT.getValue(), null);
 
-        Validator validator = new Validator( new TaskSupplier(new CommandLineValidationTaskDescriptionSupplier(), new DataPointerFactories( factories )), getPrinter());
+        Validator validator = new Validator( new TaskSupplier(new CommandLineTaskSupplier()), getPrinter());
 
         validator.start();
 
@@ -201,12 +209,8 @@ public class FunctionalTest {
 
     @Test
     public void test(){
-
-        Map<String, DataPointerFactory> factories = new HashMap<>();
-        factories.put( "const", new ConstDataPointerFactory() );
-
-        Validator validator = new Validator( new TaskSupplier( getSupplier(), new DataPointerFactories( factories )), getPrinter() );
-
+        ActiveDataSourceConnections.getInstance().add("const", Types.CONSTANT.getValue(), null);
+        Validator validator = new Validator( new TaskSupplier( getSupplier() ), getPrinter() );
         validator.start();
 
         try {

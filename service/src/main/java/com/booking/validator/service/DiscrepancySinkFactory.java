@@ -1,7 +1,5 @@
 package com.booking.validator.service;
 
-import com.booking.validator.service.task.ValidationTask;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;

@@ -1,21 +1,17 @@
 package com.booking.validator.service;
 
-import com.booking.validator.data.constant.ConstDataPointerFactory;
-import com.booking.validator.data.DataPointerFactory;
-import com.booking.validator.data.hbase.HBaseDataPointerFactory;
-import com.booking.validator.data.mysql.MysqlDataPointerFactory;
-import com.booking.validator.service.protocol.ValidationTaskDescription;
-import com.booking.validator.service.task.*;
-import com.booking.validator.service.task.cli.CommandLineValidationTaskDescriptionSupplier;
-import com.booking.validator.service.task.kafka.KafkaValidationTaskDescriptionSupplier;
+import com.booking.validator.connectors.ActiveDataSourceConnections;
+import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
+import com.booking.validator.service.supplier.task.cli.CommandLineTaskSupplier;
+import com.booking.validator.service.supplier.task.kafka.KafkaTaskSupplier;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskComparisonResult;
 import com.booking.validator.utils.CommandLineArguments;
 import com.booking.validator.utils.Retrier;
 import com.booking.validator.utils.RetryFriendlySupplier;
 import com.booking.validator.utils.Service;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +20,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -100,10 +94,16 @@ public class Launcher {
 
         LOGGER.info("Reporting service started.");
 
+        initDataSourceConnections(validatorConfiguration.getDataSources());
         RetryFriendlySupplier supplier = getTaskSupplier();
 
         new Validator( supplier, getResultConsumer(registry, supplier) ).start();
 
+    }
+
+    private void initDataSourceConnections(Iterable<ValidatorConfiguration.DataSource> dataSources) {
+        ActiveDataSourceConnections activeDataSourceConnections = ActiveDataSourceConnections.getInstance();
+        dataSources.forEach(dataSource -> activeDataSourceConnections.add(dataSource.getName(), dataSource.getType(), dataSource.getConfiguration()));
     }
 
     private MetricRegistry getMetricRegistry(){
@@ -120,10 +120,9 @@ public class Launcher {
 
     }
 
-    private BiConsumer<ValidationTaskResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<ValidationTask> retrier){
+    private BiConsumer<TaskComparisonResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<Task> retrier){
 
         return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier, getDiscrepancySink());
-
     }
 
     private DiscrepancySinkFactory.DiscrepancySink getDiscrepancySink() {
@@ -135,11 +134,11 @@ public class Launcher {
     }
 
 
-    private RetryFriendlySupplier<ValidationTask> getTaskSupplier(){
+    private RetryFriendlySupplier<QueryConnectorsForTask> getTaskSupplier(){
 
         ValidatorConfiguration.TaskSupplier supplierDescription = validatorConfiguration.getTaskSupplier();
 
-        Supplier<ValidationTaskDescription> descriptionSupplier;
+        Supplier<Task> descriptionSupplier;
         String type = supplierDescription.getType();
 
         if (KAFKA.equals(type)){
@@ -148,7 +147,7 @@ public class Launcher {
 
         } else if (CONSOLE.equals(type)) {
 
-            descriptionSupplier = new CommandLineValidationTaskDescriptionSupplier();
+            descriptionSupplier = new CommandLineTaskSupplier();
 
         } else {
 
@@ -156,7 +155,7 @@ public class Launcher {
 
         }
 
-        Supplier<ValidationTask> taskSupplier = new TaskSupplier( descriptionSupplier, getDataPointers() );
+        Supplier<QueryConnectorsForTask> taskSupplier = new TaskSupplier(descriptionSupplier);
 
         RetryPolicy policy = validatorConfiguration.getRetryPolicy();
 
@@ -164,7 +163,7 @@ public class Launcher {
 
     }
 
-    private KafkaValidationTaskDescriptionSupplier getKafkaTaskDescriptionSupplier(Map<String,String> configuration ){
+    private KafkaTaskSupplier getKafkaTaskDescriptionSupplier(Map<String,String> configuration ){
 
         String topic = configuration.remove("topic");
 
@@ -175,45 +174,6 @@ public class Launcher {
 
         configuration.entrySet().stream().forEach( x -> kafkaProperties.setProperty(x.getKey(), x.getValue()) );
 
-        return KafkaValidationTaskDescriptionSupplier.getInstance( topic, Integer.valueOf(bufferSizeString), kafkaProperties);
+        return KafkaTaskSupplier.getInstance( topic, Integer.valueOf(bufferSizeString), kafkaProperties);
     }
-
-    private DataPointerFactories getDataPointers(){
-
-        Map<String, DataPointerFactory> knownFactories = new HashMap<>();
-
-        Map<String, List<ValidatorConfiguration.DataSource>> sourcesByType = StreamSupport.stream( validatorConfiguration.getDataSources().spliterator(), false )
-                .collect( Collectors.groupingBy( source -> source.getType() ) );
-
-        knownFactories.put(HBASE, getHBaseFactory( sourcesByType.getOrDefault( STORAGE, Collections.EMPTY_LIST ) ));
-        knownFactories.put(MYSQL, getMysqlFactory( sourcesByType.getOrDefault( MYSQL, Collections.EMPTY_LIST ) ));
-        knownFactories.put(CONST, new ConstDataPointerFactory());
-
-        return new DataPointerFactories(knownFactories);
-    }
-
-    private DataPointerFactory getMysqlFactory( Iterable<ValidatorConfiguration.DataSource> sources ){
-
-        Map<String,Map<String,String>> configs = StreamSupport.stream( sources.spliterator(), false )
-                .collect(Collectors.toMap(s->s.getName(), s->s.getConfiguration()));
-
-        return MysqlDataPointerFactory.build(configs);
-
-    }
-
-    private DataPointerFactory getHBaseFactory( Iterable<ValidatorConfiguration.DataSource> sources ){
-
-        Map<String,Configuration> hbaseConfigurations = StreamSupport.stream( sources.spliterator(), false )
-                .collect( Collectors.toMap(
-                        s -> s.getName(),
-                        s-> {
-                            Configuration configuration = HBaseConfiguration.create();
-                            s.getConfiguration().forEach( (key,value) -> configuration.set(key,value) );
-                            return configuration;
-                        } ) );
-
-        return HBaseDataPointerFactory.build(hbaseConfigurations);
-
-    }
-
 }

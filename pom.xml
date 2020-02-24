@@ -13,6 +13,7 @@
         <module>service</module>
         <module>data</module>
         <module>utils</module>
+        <module>connectors</module>
     </modules>
 
     <build>

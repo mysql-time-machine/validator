@@ -1,7 +1,9 @@
 package com.booking.validator.service;
 
-import com.booking.validator.service.task.ValidationTask;
-import com.booking.validator.service.task.ValidationTaskResult;
+import com.booking.validator.task.Task;
+import com.booking.validator.task.TaskComparisonResult;
+import com.booking.validator.task.TaskComparisonResultV1;
+import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
@@ -18,13 +20,13 @@ import static com.codahale.metrics.MetricRegistry.name;
 /**
  * Created by psalimov on 10/14/16.
  */
-public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwable> {
+public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultConsumer.class);
 
     private final MetricRegistry registry;
 
-    private final Retrier<ValidationTask> retrier;
+    private final Retrier<Task> retrier;
 
     private final RetryPolicy retryPolicy;
 
@@ -34,11 +36,11 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), discrepancySink);
     }
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<ValidationTask> retrier,
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier,
                           CurrentTimestampProvider currentTimestampProvider, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this.registry = registry;
         this.retrier = retrier;
@@ -56,8 +58,8 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
     }
 
     @Override
-    public void accept(ValidationTaskResult result, Throwable t) {
-
+    public void accept(TaskComparisonResult resultCast, Throwable t) {
+        TaskComparisonResultV1 result = (TaskComparisonResultV1) resultCast;
         try {
 
             if (t != null) {
@@ -72,36 +74,35 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
             Throwable error = result.getError();
 
-            String id = result.getId();
-            String tag = result.getTag();
+            String tag = ((TaskV1) result.getTask()).getTag();
 
             if (tag == null || tag.isEmpty()) tag = "no-tag";
 
             if (error != null) {
 
-                LOGGER.error("Task {} tagged {}, {} processing error:", id, tag, result.getTask(), error);
+                LOGGER.error("Task tagged {}, {} processing error:", tag, result.getTask(), error);
 
                 registry.meter(name("tasks", tag, "failed")).mark();
 
                 return;
             }
 
-            ValidationTask task = result.getTask();
+            TaskV1 task = (TaskV1) result.getTask();
 
             if (result.isOk()) {
 
-                LOGGER.info("Task {} tagged {} result is positive after {} tries, processed in {}s", id, tag,
+                LOGGER.info("Task tagged {} result is positive after {} tries, processed in {}s", tag,
                         task.getTriesCount(), getTimeElapsedMillis(task.getCreateTime())/1000);
 
                 registry.meter(name("tasks", tag, "positive")).mark();
-                registry.meter(name("tasks", tag, "positive_on_try_" + result.getTask().getTriesCount())).mark();
+                registry.meter(name("tasks", tag, "positive_on_try_" + task.getTriesCount())).mark();
 
             } else {
 
-                if (task.getRetriesCount() >= retryPolicy.getRetriesLimit()) {
+                if (task.getRetriesCount()>= retryPolicy.getRetriesLimit()) {
 
-                    LOGGER.warn("Task {} tagged {}, {} result is negative: {} after {} tries, processed in {}s",
-                            id, tag, result.getTask(), result.getDicrepancy(), task.getTriesCount(),
+                    LOGGER.warn("Task tagged {}, {} result is negative: {} after {} tries, processed in {}s",
+                            tag, result.getTask(), result.getDiscrepancy(), task.getTriesCount(),
                             getTimeElapsedMillis(task.getCreateTime())/1000);
 
                     registry.meter(name("tasks", tag, "negative")).mark();
@@ -109,8 +110,8 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
 
                 } else {
 
-                    LOGGER.info("Task {} tagged {} result is negative: {}, will retry {} time in {}s",
-                            id, tag, result.getDicrepancy(), task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
+                    LOGGER.info("Task tagged {} result is negative: {}, will retry {} time in {}s",
+                            tag, result.getDiscrepancy(), task.getTriesCount(), retryPolicy.getDelayForRetry(task.getRetriesCount())/1000);
 
                     registry.meter(name("tasks", tag, "retries")).mark();
 
@@ -129,7 +130,7 @@ public class ResultConsumer implements BiConsumer<ValidationTaskResult, Throwabl
         }
     }
 
-    private void sendDiscrepancyToSink(ValidationTaskResult result) {
+    private void sendDiscrepancyToSink(TaskComparisonResultV1 result) {
         try {
             if (discrepancySink != null) {
                 discrepancySink.send(objectMapper.writeValueAsString(result));
