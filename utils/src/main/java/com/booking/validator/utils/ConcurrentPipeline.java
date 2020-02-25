@@ -48,12 +48,17 @@ public class ConcurrentPipeline<T> implements Service {
     }
 
     private void startTaskAsync(){
-
         if (run) CompletableFuture.supplyAsync(supplier)
                 .thenCompose( Supplier::get )
                 .whenComplete( consumer )
-                .whenComplete( (x,t)->startTaskAsync()); // a consumer exception could be handled here
-
+                .whenComplete( (x,t)-> {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    startTaskAsync();
+                }); // a consumer exception could be handled here
     }
 
 }
