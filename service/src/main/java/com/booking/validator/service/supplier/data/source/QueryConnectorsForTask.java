@@ -18,19 +18,15 @@ public class QueryConnectorsForTask implements Supplier<CompletableFuture<TaskCo
         this.task = task;
     }
 
-    private Supplier<Data> getSupplier(DataSource dataSource) {
-        return new Supplier<Data>() {
-            @Override
-            public Data get() {
-                return ActiveDataSourceConnections.getInstance().query(dataSource);
-            }
-        };
+    private static Supplier<Data> getSupplier(DataSource dataSource) {
+        return () -> ActiveDataSourceConnections.getInstance().query(dataSource);
     }
 
     public CompletableFuture<TaskComparisonResult> get(){
-        return CompletableFuture.supplyAsync(getSupplier(((TaskV1) task).getSource()))
+        if (task == null) return CompletableFuture.completedFuture(null);
+        return CompletableFuture.supplyAsync(QueryConnectorsForTask.getSupplier(((TaskV1) task).getSource()))
                 .thenCombineAsync(
-                        CompletableFuture.supplyAsync(getSupplier(((TaskV1) task).getTarget())), task::validate)
-                .exceptionally( t -> new TaskComparisonResultV1(task, null, t));
+                        CompletableFuture.supplyAsync(QueryConnectorsForTask.getSupplier(((TaskV1) task).getTarget())), task::validate)
+                .exceptionally( t -> new TaskComparisonResultV1((TaskV1) task, null, t));
     }
 }

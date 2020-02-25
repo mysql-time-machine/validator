@@ -31,7 +31,7 @@ public class KafkaTaskDeserializer implements Deserializer<Task> {
 
             return task;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
 
             LOGGER.error("Error deserializing task description", e);
 

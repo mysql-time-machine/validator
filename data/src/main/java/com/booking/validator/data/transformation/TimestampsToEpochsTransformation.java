@@ -48,7 +48,7 @@ public class TimestampsToEpochsTransformation implements Transformation {
         return data;
     }
 
-    public Object timestampToEpoch(Object rawValue) {
+    private Object timestampToEpoch(Object rawValue) {
         if (rawValue != null){
             Timestamp t = (Timestamp) rawValue;
             String value = String.valueOf(t.getTime());
@@ -57,7 +57,7 @@ public class TimestampsToEpochsTransformation implements Transformation {
         return rawValue;
     }
 
-    public boolean isTimestampColumn(Object object) {
+    private boolean isTimestampColumn(Object object) {
         return true;
     }
 

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -85,17 +86,20 @@ public class Launcher {
     public void launch(){
 
         MetricRegistry registry = getMetricRegistry();
+        if (validatorConfiguration.getReporter()!=null) {
+            Service reporter = (new ReporterServiceFactory()).produce(registry, validatorConfiguration.getReporter().getType(), validatorConfiguration.getReporter().getConfiguration());
 
-        Service reporter =  (new ReporterServiceFactory()).produce(registry, validatorConfiguration.getReporter().getType() ,validatorConfiguration.getReporter().getConfiguration());
+            LOGGER.info("Starting reporting service...");
 
-        LOGGER.info("Starting reporting service...");
+            reporter.start();
 
-        reporter.start();
+            LOGGER.info("Reporting service started.");
+        } else {
+            LOGGER.info("No Metrics service configured");
+        }
 
-        LOGGER.info("Reporting service started.");
-
-        initDataSourceConnections(validatorConfiguration.getDataSources());
-        RetryFriendlySupplier supplier = getTaskSupplier();
+            initDataSourceConnections(validatorConfiguration.getDataSources());
+            RetryFriendlySupplier supplier = getTaskSupplier();
 
         new Validator( supplier, getResultConsumer(registry, supplier) ).start();
 
@@ -120,7 +124,7 @@ public class Launcher {
 
     }
 
-    private BiConsumer<TaskComparisonResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<Task> retrier){
+    private BiConsumer<TaskComparisonResult,Throwable> getResultConsumer(MetricRegistry registry, Retrier<QueryConnectorsForTask> retrier){
 
         return new ResultConsumer(registry, validatorConfiguration.getRetryPolicy() ,retrier, getDiscrepancySink());
     }

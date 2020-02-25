@@ -1,5 +1,6 @@
 package com.booking.validator.service;
 
+import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
 import com.booking.validator.task.TaskComparisonResultV1;
@@ -7,13 +8,19 @@ import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
+import com.booking.validator.utils.RetryFriendlySupplier;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -26,7 +33,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
     private final MetricRegistry registry;
 
-    private final Retrier<Task> retrier;
+    private final Retrier<QueryConnectorsForTask> retrier;
 
     private final RetryPolicy retryPolicy;
 
@@ -36,11 +43,14 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
+    ScheduledExecutorService retryExecutor = Executors.newSingleThreadScheduledExecutor();
+
+
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<QueryConnectorsForTask> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), discrepancySink);
     }
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier,
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<QueryConnectorsForTask> retrier,
                           CurrentTimestampProvider currentTimestampProvider, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this.registry = registry;
         this.retrier = retrier;
@@ -59,6 +69,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
     @Override
     public void accept(TaskComparisonResult resultCast, Throwable t) {
+        if (resultCast == null) return;
         TaskComparisonResultV1 result = (TaskComparisonResultV1) resultCast;
         try {
 
@@ -115,7 +126,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
                     registry.meter(name("tasks", tag, "retries")).mark();
 
-                    retrier.accept(task, retryPolicy.getDelayForRetry(task.getRetriesCount()));
+                    retrier.accept(new QueryConnectorsForTask(task), retryPolicy.getDelayForRetry(task.getRetriesCount()));
 
                 }
 
@@ -133,10 +144,14 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
     private void sendDiscrepancyToSink(TaskComparisonResultV1 result) {
         try {
             if (discrepancySink != null) {
-                discrepancySink.send(objectMapper.writeValueAsString(result));
+                discrepancySink.send(result.toJson());
             }
         } catch (Exception e) {
-            LOGGER.error(e.getStackTrace().toString());
+            LOGGER.error("Error while sending to discrepancy sink", e);
         }
+    }
+    
+    private void scheduleRetry(Task task) {
+
     }
 }

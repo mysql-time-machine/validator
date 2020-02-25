@@ -42,7 +42,7 @@ public class KafkaTaskSupplier implements Supplier<Task>, Service {
                             droppedRecords = records.count();
 
                             for (ConsumerRecord<String, Task> record : records) {
-                                buffer.put(record.value());
+                                if(record.value()!=null) buffer.put(record.value());
                                 droppedRecords--;
 
                                 if (Thread.interrupted()) {

@@ -111,7 +111,6 @@ public class FunctionalTest {
         data.put("a", "a");
         DataSource dataSource = new DataSource(
                 "constantSource",
-                Types.CONSTANT.getValue(),
                 new ConstantQueryOptions(Types.CONSTANT.getValue(), (Map<String, Object>)data, null));
         Task taskV1 = new TaskV1("unit_test", dataSource, dataSource, null);
         return mapper.writeValueAsString(taskV1);

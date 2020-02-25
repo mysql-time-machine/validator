@@ -1,35 +1,65 @@
 package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TaskComparisonResultV1 implements TaskComparisonResult {
 
-        @JsonProperty("discrepancy")
-        private final String discrepancyString;
+    @JsonProperty("discrepancy")
+    private String discrepancyString;
 
-        private final Data.Discrepancy discrepancy;
+    @JsonProperty("task")
+    private TaskV1 task;
 
-        @JsonProperty("task")
-        private final Task task;
+    @JsonIgnore
+    private Data.Discrepancy discrepancy;
 
-        private final Throwable error;
+    @JsonIgnore
+    private Throwable error = null;
 
-        public TaskComparisonResultV1(Task task, Data.Discrepancy discrepancy, Throwable error) {
-            this.task = task;
-            this.discrepancy = discrepancy;
-            this.error = error;
-            this.discrepancyString = discrepancy != null ? discrepancy.toString() : "";
+    @JsonIgnore
+    final private ObjectMapper mapper = new ObjectMapper();
+
+    public TaskComparisonResultV1(TaskV1 task, Data.Discrepancy discrepancy, Throwable error) {
+        this.task = task;
+        this.discrepancy = discrepancy;
+        this.error = error;
+        this.discrepancyString = discrepancy != null ? discrepancy.toString() : "";
+    }
+
+    public TaskComparisonResultV1() {}
+
+
+    public Throwable getError() { return error; }
+
+    public boolean isOk(){ return  error == null && !discrepancy.hasDiscrepancy(); }
+
+    public Data.Discrepancy getDiscrepancy(){ return discrepancy; }
+
+    public Task getTask(){
+        return task;
+    }
+
+    public void setDiscrepancyString(String discrepancyString) {
+        this.discrepancyString = discrepancyString;
+    }
+
+    public void setDiscrepancy(Data.Discrepancy discrepancy) {
+        this.discrepancy = discrepancy;
+    }
+
+    public void setTask(TaskV1 task) {
+        this.task = task;
+    }
+
+    public String toJson() throws RuntimeException {
+        try {
+            String result = mapper.writeValueAsString(this);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize comparison object to JSON string", e);
         }
-
-
-        public Throwable getError() { return error; }
-
-        public boolean isOk(){ return  error == null && !discrepancy.hasDiscrepancy(); }
-
-        public Data.Discrepancy getDiscrepancy(){ return discrepancy; }
-
-        public Task getTask(){
-            return task;
-        }
+    }
 }
