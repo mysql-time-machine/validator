@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Created by dbatheja on 20/02/20.
+ */
 public class TaskComparisonResultV1 implements TaskComparisonResult {
 
     @JsonProperty("discrepancy")

@@ -11,6 +11,9 @@ import com.booking.validator.task.TaskV1;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+/**
+ * Created by dbatheja on 20/02/20.
+ */
 public class QueryConnectorsForTask implements Supplier<CompletableFuture<TaskComparisonResult>> {
     private final Task task;
 

@@ -1,11 +1,14 @@
-package com.booking.validator.service;
+package com.booking.validator.utils;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public class NonBlockingTaskSupplier<T> implements Supplier<T> {
+/**
+ * Created by dbatheja on 25/02/20.
+ */
+public class NonBlockingSupplier<T> implements Supplier<T> {
 
     Queue<T> globalQueue = new ConcurrentLinkedQueue<T>();
     AtomicInteger atomicInteger = new AtomicInteger(0);
@@ -14,7 +17,7 @@ public class NonBlockingTaskSupplier<T> implements Supplier<T> {
     }
 
     Supplier<T> fetcher = null;
-    NonBlockingTaskSupplier(Supplier<T> fetcher) {
+    public NonBlockingSupplier(Supplier<T> fetcher) {
         this.fetcher = fetcher;
     }
 
