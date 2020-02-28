@@ -3,24 +3,18 @@ package com.booking.validator.service;
 import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
-import com.booking.validator.task.TaskComparisonResultV1;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
-import com.booking.validator.utils.RetryFriendlySupplier;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -68,9 +62,8 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
     }
 
     @Override
-    public void accept(TaskComparisonResult resultCast, Throwable t) {
-        if (resultCast == null) return;
-        TaskComparisonResultV1 result = (TaskComparisonResultV1) resultCast;
+    public void accept(TaskComparisonResult result, Throwable t) {
+        if (result == null) return;
         try {
 
             if (t != null) {
@@ -85,7 +78,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
             Throwable error = result.getError();
 
-            String tag = ((TaskV1) result.getTask()).getTag();
+            String tag = result.getTask().getTag();
 
             if (tag == null || tag.isEmpty()) tag = "no-tag";
 
@@ -98,7 +91,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
                 return;
             }
 
-            TaskV1 task = (TaskV1) result.getTask();
+            Task task = result.getTask();
 
             if (result.isOk()) {
 
@@ -141,7 +134,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
         }
     }
 
-    private void sendDiscrepancyToSink(TaskComparisonResultV1 result) {
+    private void sendDiscrepancyToSink(TaskComparisonResult result) {
         try {
             if (discrepancySink != null) {
                 discrepancySink.send(result.toJson());

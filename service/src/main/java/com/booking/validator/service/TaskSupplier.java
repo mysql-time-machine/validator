@@ -2,7 +2,6 @@ package com.booking.validator.service;
 
 import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.NonBlockingSupplier;
 import com.booking.validator.utils.Service;
 
@@ -32,7 +31,6 @@ public class TaskSupplier implements Supplier<QueryConnectorsForTask>, Service {
         if (task == null) {
             return new QueryConnectorsForTask(null); // dbatheja: Will return a completed future. This is done to ensure that the entire pipeline is non-blocking
         }
-        TaskV1 taskV1 = (TaskV1) task;
-        return new QueryConnectorsForTask(taskV1);
+        return new QueryConnectorsForTask(task);
     }
 }

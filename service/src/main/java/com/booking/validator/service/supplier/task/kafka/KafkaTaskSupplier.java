@@ -1,7 +1,6 @@
 package com.booking.validator.service.supplier.task.kafka;
 
 import com.booking.validator.task.Task;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;

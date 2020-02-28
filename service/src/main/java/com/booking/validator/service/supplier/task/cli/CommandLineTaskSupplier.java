@@ -1,7 +1,6 @@
 package com.booking.validator.service.supplier.task.cli;
 
 import com.booking.validator.task.Task;
-import com.booking.validator.task.TaskV1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class CommandLineTaskSupplier implements Supplier<Task> {
             while (input == null || input.equals("")) {
                 input = System.console().readLine();
             }
-            return mapper.readValue( input , TaskV1.class);
+            return mapper.readValue( input , Task.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,13 +1,11 @@
 package com.booking.validator.service.supplier.task.kafka;
 
 import com.booking.validator.task.Task;
-import com.booking.validator.task.TaskV1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -27,7 +25,7 @@ public class KafkaTaskDeserializer implements Deserializer<Task> {
 
         try {
 
-            Task task = mapper.readValue(bytes, TaskV1.class);
+            Task task = mapper.readValue(bytes, Task.class);
 
             return task;
 

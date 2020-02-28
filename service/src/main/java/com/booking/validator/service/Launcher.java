@@ -3,6 +3,7 @@ package com.booking.validator.service;
 import com.booking.validator.connectors.ActiveDataSourceConnections;
 import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.service.supplier.task.cli.CommandLineTaskSupplier;
+import com.booking.validator.service.supplier.task.file.FileTaskSupplier;
 import com.booking.validator.service.supplier.task.kafka.KafkaTaskSupplier;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
@@ -38,6 +39,8 @@ public class Launcher {
     private static final String MYSQL = "mysql";
     private static final String KAFKA = "kafka";
     private static final String CONSOLE = "console";
+    private static final String FILE = "file";
+
 
     public static void main(String[] args) {
 
@@ -152,6 +155,10 @@ public class Launcher {
         } else if (CONSOLE.equals(type)) {
 
             descriptionSupplier = new CommandLineTaskSupplier();
+
+        } else if (FILE.equals(type)) {
+
+            descriptionSupplier = new FileTaskSupplier(supplierDescription.getConfiguration());
 
         } else {
 
