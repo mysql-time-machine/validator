@@ -4,10 +4,7 @@ import com.booking.validator.data.source.bigtable.BigtableQueryOptions;
 import com.booking.validator.data.source.constant.ConstantQueryOptions;
 import com.booking.validator.data.source.hbase.HbaseQueryOptions;
 import com.booking.validator.data.source.mysql.MysqQuerylOptions;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.Map;
 
@@ -28,6 +25,15 @@ import java.util.Map;
         @JsonSubTypes.Type(value = BigtableQueryOptions.class, name = Types.Constants.BIGTABLE_VALUE)
 })
 public abstract class DataSourceQueryOptions {
+
+    private String type;
+
+    @JsonCreator
+    public DataSourceQueryOptions(@JsonProperty("type") String type) {
+        this.type = type;
+    }
+
+    @JsonIgnore
     public String getType() {
         return type;
     }
@@ -36,11 +42,5 @@ public abstract class DataSourceQueryOptions {
         this.type = type;
     }
 
-    private String type;
-
-    @JsonCreator
-    public DataSourceQueryOptions(@JsonProperty("type") String type) {
-        this.type = type;
-    }
     public abstract Map<String, Object> getTransformations();
 }

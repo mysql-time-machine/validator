@@ -5,12 +5,13 @@ import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSource;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
-import com.booking.validator.task.TaskComparisonResultV1;
-import com.booking.validator.task.TaskV1;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+/**
+ * Created by dbatheja on 20/02/20.
+ */
 public class QueryConnectorsForTask implements Supplier<CompletableFuture<TaskComparisonResult>> {
     private final Task task;
 
@@ -18,19 +19,15 @@ public class QueryConnectorsForTask implements Supplier<CompletableFuture<TaskCo
         this.task = task;
     }
 
-    private Supplier<Data> getSupplier(DataSource dataSource) {
-        return new Supplier<Data>() {
-            @Override
-            public Data get() {
-                return ActiveDataSourceConnections.getInstance().query(dataSource);
-            }
-        };
+    private static Supplier<Data> getSupplier(DataSource dataSource) {
+        return () -> ActiveDataSourceConnections.getInstance().query(dataSource);
     }
 
     public CompletableFuture<TaskComparisonResult> get(){
-        return CompletableFuture.supplyAsync(getSupplier(((TaskV1) task).getSource()))
+        if (task == null) return CompletableFuture.completedFuture(null);
+        return CompletableFuture.supplyAsync(QueryConnectorsForTask.getSupplier(task.getSource()))
                 .thenCombineAsync(
-                        CompletableFuture.supplyAsync(getSupplier(((TaskV1) task).getTarget())), task::validate)
-                .exceptionally( t -> new TaskComparisonResultV1(task, null, t));
+                        CompletableFuture.supplyAsync(QueryConnectorsForTask.getSupplier(task.getTarget())), task::validate)
+                .exceptionally( t -> new TaskComparisonResult(task, null, t));
     }
 }

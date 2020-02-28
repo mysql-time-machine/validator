@@ -8,8 +8,6 @@ import com.booking.validator.service.supplier.task.cli.CommandLineTaskSupplier;
 import com.booking.validator.service.supplier.task.kafka.KafkaTaskSupplier;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
-import com.booking.validator.task.TaskComparisonResultV1;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -111,10 +109,9 @@ public class FunctionalTest {
         data.put("a", "a");
         DataSource dataSource = new DataSource(
                 "constantSource",
-                Types.CONSTANT.getValue(),
                 new ConstantQueryOptions(Types.CONSTANT.getValue(), (Map<String, Object>)data, null));
-        Task taskV1 = new TaskV1("unit_test", dataSource, dataSource, null);
-        return mapper.writeValueAsString(taskV1);
+        Task task = new Task("unit_test", dataSource, dataSource, null);
+        return mapper.writeValueAsString(task);
     }
 
     private Service getKafkaProducer() {
@@ -184,7 +181,7 @@ public class FunctionalTest {
             if (t!=null) {
                 System.out.println(t);
             } else {
-                System.out.println(((TaskComparisonResultV1)x).isOk());
+                System.out.println(x.isOk());
             }
         };
 

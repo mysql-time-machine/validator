@@ -1,7 +1,5 @@
 package com.booking.validator.data;
 
-import com.booking.validator.data.mysql.Transformation;
-
 import java.util.*;
 import java.util.stream.Collectors;
 

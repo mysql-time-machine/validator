@@ -1,9 +1,8 @@
 package com.booking.validator.service;
 
+import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
-import com.booking.validator.task.TaskComparisonResultV1;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.CurrentTimestampProvider;
 import com.booking.validator.utils.CurrentTimestampProviderImpl;
 import com.booking.validator.utils.Retrier;
@@ -13,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -26,7 +27,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
     private final MetricRegistry registry;
 
-    private final Retrier<Task> retrier;
+    private final Retrier<QueryConnectorsForTask> retrier;
 
     private final RetryPolicy retryPolicy;
 
@@ -36,11 +37,14 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
+    ScheduledExecutorService retryExecutor = Executors.newSingleThreadScheduledExecutor();
+
+
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<QueryConnectorsForTask> retrier, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this(registry, retryPolicy, retrier, new CurrentTimestampProviderImpl(), discrepancySink);
     }
 
-    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<Task> retrier,
+    public ResultConsumer(MetricRegistry registry, RetryPolicy retryPolicy, Retrier<QueryConnectorsForTask> retrier,
                           CurrentTimestampProvider currentTimestampProvider, DiscrepancySinkFactory.DiscrepancySink discrepancySink) {
         this.registry = registry;
         this.retrier = retrier;
@@ -58,8 +62,8 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
     }
 
     @Override
-    public void accept(TaskComparisonResult resultCast, Throwable t) {
-        TaskComparisonResultV1 result = (TaskComparisonResultV1) resultCast;
+    public void accept(TaskComparisonResult result, Throwable t) {
+        if (result == null) return;
         try {
 
             if (t != null) {
@@ -74,7 +78,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
             Throwable error = result.getError();
 
-            String tag = ((TaskV1) result.getTask()).getTag();
+            String tag = result.getTask().getTag();
 
             if (tag == null || tag.isEmpty()) tag = "no-tag";
 
@@ -87,7 +91,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
                 return;
             }
 
-            TaskV1 task = (TaskV1) result.getTask();
+            Task task = result.getTask();
 
             if (result.isOk()) {
 
@@ -115,7 +119,7 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
 
                     registry.meter(name("tasks", tag, "retries")).mark();
 
-                    retrier.accept(task, retryPolicy.getDelayForRetry(task.getRetriesCount()));
+                    retrier.accept(new QueryConnectorsForTask(task), retryPolicy.getDelayForRetry(task.getRetriesCount()));
 
                 }
 
@@ -130,13 +134,17 @@ public class ResultConsumer implements BiConsumer<TaskComparisonResult, Throwabl
         }
     }
 
-    private void sendDiscrepancyToSink(TaskComparisonResultV1 result) {
+    private void sendDiscrepancyToSink(TaskComparisonResult result) {
         try {
             if (discrepancySink != null) {
-                discrepancySink.send(objectMapper.writeValueAsString(result));
+                discrepancySink.send(result.toJson());
             }
         } catch (Exception e) {
-            LOGGER.error(e.getStackTrace().toString());
+            LOGGER.error("Error while sending to discrepancy sink", e);
         }
+    }
+    
+    private void scheduleRetry(Task task) {
+
     }
 }

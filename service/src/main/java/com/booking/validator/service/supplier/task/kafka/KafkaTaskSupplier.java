@@ -1,7 +1,6 @@
 package com.booking.validator.service.supplier.task.kafka;
 
 import com.booking.validator.task.Task;
-import com.booking.validator.task.TaskV1;
 import com.booking.validator.utils.Service;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -42,7 +41,7 @@ public class KafkaTaskSupplier implements Supplier<Task>, Service {
                             droppedRecords = records.count();
 
                             for (ConsumerRecord<String, Task> record : records) {
-                                buffer.put(record.value());
+                                if(record.value()!=null) buffer.put(record.value());
                                 droppedRecords--;
 
                                 if (Thread.interrupted()) {
