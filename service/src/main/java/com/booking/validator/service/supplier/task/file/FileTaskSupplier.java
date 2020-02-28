@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Supplier;
 
+/**
+ * Created by dbatheja on 28/02/20.
+ */
 public class FileTaskSupplier implements Supplier<Task>{
     private static String FILE_PATH_PROPERTY = "path";
     Scanner scanner;

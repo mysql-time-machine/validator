@@ -32,8 +32,8 @@ public class TaskComparisonResult {
         this.discrepancyString = discrepancy != null ? discrepancy.toString() : "";
     }
 
+    // Used for constructing Jackson object
     public TaskComparisonResult() {}
-
 
     public Throwable getError() { return error; }
 

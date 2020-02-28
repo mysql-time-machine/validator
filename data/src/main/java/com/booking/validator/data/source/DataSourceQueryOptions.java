@@ -26,6 +26,13 @@ import java.util.Map;
 })
 public abstract class DataSourceQueryOptions {
 
+    private String type;
+
+    @JsonCreator
+    public DataSourceQueryOptions(@JsonProperty("type") String type) {
+        this.type = type;
+    }
+
     @JsonIgnore
     public String getType() {
         return type;
@@ -35,11 +42,5 @@ public abstract class DataSourceQueryOptions {
         this.type = type;
     }
 
-    private String type;
-
-    @JsonCreator
-    public DataSourceQueryOptions(@JsonProperty("type") String type) {
-        this.type = type;
-    }
     public abstract Map<String, Object> getTransformations();
 }

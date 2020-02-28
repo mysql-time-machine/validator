@@ -2,12 +2,12 @@ package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSource;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -15,29 +15,49 @@ import static java.util.Objects.requireNonNull;
  */
 public class Task {
 
-    @JsonIgnore
-    @JsonProperty("v")
     private final String v="v1";
 
-    @JsonProperty("extra")
     private Map<String, Object> extra;
 
-    @JsonProperty("tag")
     private String tag;
 
-    @JsonProperty("source")
     private DataSource source;
 
-    @JsonProperty("target")
     private DataSource target;
 
-    @JsonIgnore
-    @JsonProperty("create_time")
     private long createTime;
 
-    @JsonIgnore
-    @JsonProperty("tries_count")
     private int triesCount;
+
+    final private ObjectMapper mapper = new ObjectMapper();
+
+    @JsonCreator
+    public Task(@JsonProperty("tag") String tag,
+                @JsonProperty("source") DataSource source,
+                @JsonProperty("target") DataSource target,
+                @JsonProperty("extra") Map<String, Object> extra) {
+        this.source = requireNonNull(source);
+        this.target = requireNonNull(target);
+        this.tag = tag;
+        this.extra = extra;
+        this.createTime = System.currentTimeMillis();
+        this.triesCount = 0;
+
+    }
+
+    public TaskComparisonResult validate(Data sourceData, Data targetData) {
+        triesCount ++;
+        return new TaskComparisonResult(this, Data.discrepancy(sourceData, targetData), null);
+    }
+
+    public String toJson() throws RuntimeException {
+        try {
+            String task = mapper.writeValueAsString(this);
+            return task;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize task object to JSON string", e);
+        }
+    }
 
     public Map<String, Object> getExtra() {
         return extra;
@@ -68,36 +88,6 @@ public class Task {
     @JsonIgnore
     public int getRetriesCount() {
         return triesCount - 1;
-    }
-
-    final private ObjectMapper mapper = new ObjectMapper();
-
-    public Task(String tag, DataSource source, DataSource target, Map<String, Object> extra) {
-        this.source = requireNonNull(source);
-        this.target = requireNonNull(target);
-        this.tag = tag;
-        this.extra = extra;
-        this.createTime = System.currentTimeMillis();
-        this.triesCount = 0;
-
-    }
-
-    // FOR INTERNAL JSON DESERIALIZATION ONLY
-    // DON'T USE IT FOR TASK CREATION
-    public Task() {}
-
-    public TaskComparisonResult validate(Data sourceData, Data targetData) {
-        triesCount ++;
-        return (TaskComparisonResult) new TaskComparisonResult(this, Data.discrepancy(sourceData, targetData), null);
-    }
-
-    public String toJson() throws RuntimeException {
-        try {
-            String task = mapper.writeValueAsString(this);
-            return task;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize task object to JSON string", e);
-        }
     }
 
     public void setExtra(Map<String, Object> extra) {
