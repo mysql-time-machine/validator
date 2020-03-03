@@ -20,6 +20,7 @@ import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -187,6 +188,7 @@ public class FunctionalTest {
 
     }
 
+    @Ignore
     @Test
     public void cliSupplierTest(){
 
@@ -204,6 +206,7 @@ public class FunctionalTest {
 
     }
 
+    @Ignore
     @Test
     public void test(){
         ActiveDataSourceConnections.getInstance().add("const", Types.CONSTANT.getValue(), null);
