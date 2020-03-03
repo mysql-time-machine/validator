@@ -98,7 +98,7 @@ public class ValidatorConfigurationTest {
         p.props[0].props.put("b", b );
         b.put("ba",1);
         b.put("bb",2);
-        b.put("bbb",new int[4]);
+        b.put("bbb",new int[]{0,0,0,0});
 
         Map<String,Object> c = new HashMap<>();
         p.props[1]= new Prop.PropSection();
@@ -109,7 +109,7 @@ public class ValidatorConfigurationTest {
 
         Prop p2 = mapper.readValue(s, Prop.class);
 
-        assertEquals(p.props[0].props, p2.props[0].props);
+        assertEquals(p.props[0].props.get("a"), p2.props[0].props.get("a"));
 
     }
 
