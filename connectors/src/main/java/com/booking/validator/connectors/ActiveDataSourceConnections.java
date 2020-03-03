@@ -47,6 +47,7 @@ public class ActiveDataSourceConnections {
 
     public void closeAll() {
         for(DataSourceConnection conn : connections.values()) { conn.close(); }
+        connections.clear();
     }
 
     public Map<String, DataSourceConnection> getConnections() {

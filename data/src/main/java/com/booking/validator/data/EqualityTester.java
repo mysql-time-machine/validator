@@ -2,10 +2,7 @@ package com.booking.validator.data;
 
 import org.apache.hadoop.hbase.shaded.org.apache.directory.api.util.Strings;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**

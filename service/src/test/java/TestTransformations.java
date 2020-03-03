@@ -14,7 +14,12 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CreateTaskV1 {
+public class TestTransformations {
+
+    public void finalize() {
+        ActiveDataSourceConnections.getInstance().closeAll();
+    }
+
     @Test
     public void testConstantDataSourceDeserialization() throws Exception {
         HashMap<String, Object> data = new HashMap<String, Object>();
@@ -30,6 +35,8 @@ public class CreateTaskV1 {
         ObjectMapper mapper = new ObjectMapper();
         Task pls = mapper.readValue(taskV1.toJson(), Task.class);
         assertEquals(((ConstantQueryOptions)pls.getSource().getOptions()).getData().get("a"), "a");
+
+        finalize();
     }
 
     @Test
@@ -53,6 +60,39 @@ public class CreateTaskV1 {
         QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskV1);
         TaskComparisonResult taskComparisonResult = qcft.get().get();
         assertTrue(taskComparisonResult.isOk());
+
+        finalize();
     }
+
+    @Test
+    public void testRangedComparison() throws Exception {
+        HashMap<String, Object> data1 = new HashMap<String, Object>();
+        data1.put("a", 12);
+        HashMap<String, Object> transformations = new HashMap<String, Object>();
+        transformations.put(TransformationTypes.ALIAS_COLUMNS.getValue(), new HashMap<String, String>(){{put("a", "b");}});
+        DataSource dataSource = new DataSource(
+                "constantSource",
+                new ConstantQueryOptions("constant", (Map<String, Object>)data1, transformations));
+
+        HashMap<String, Object> data2 = new HashMap<String, Object>();
+        data2.put("b", 15);
+        DataSource dataSource2 = new DataSource(
+                "constantSource",
+                new ConstantQueryOptions("constant", (Map<String, Object>)data2, null));
+        Task taskV1 = new Task("unit_test", dataSource, dataSource2, new HashMap<String, Object>(){{
+            put("ranges", new HashMap<String, Object>(){{
+                put("b", 2);
+            }});
+        }});
+        System.out.println(taskV1.toJson());
+        ActiveDataSourceConnections.getInstance().add("constantSource", Types.CONSTANT.getValue(), null);
+        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskV1);
+        TaskComparisonResult taskComparisonResult = qcft.get().get();
+
+        assertTrue(taskComparisonResult.isOk());
+
+        finalize();
+    }
+
 
 }

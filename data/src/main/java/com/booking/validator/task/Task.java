@@ -47,7 +47,7 @@ public class Task {
 
     public TaskComparisonResult validate(Data sourceData, Data targetData) {
         triesCount ++;
-        return new TaskComparisonResult(this, Data.discrepancy(sourceData, targetData), null);
+        return new TaskComparisonResult(this, Data.discrepancy(sourceData, targetData, this.extra), null);
     }
 
     public String toJson() throws RuntimeException {
