@@ -2,12 +2,13 @@ package com.booking.validator.task;
 
 import com.booking.validator.data.Data;
 import com.booking.validator.data.source.DataSource;
+import com.booking.validator.task.extra.Extra;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Map;
+import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -17,7 +18,7 @@ public class Task {
 
     private final String v="v1";
 
-    private Map<String, Object> extra;
+    private List<Extra> extra;
 
     private String tag;
 
@@ -35,7 +36,7 @@ public class Task {
     public Task(@JsonProperty("tag") String tag,
                 @JsonProperty("source") DataSource source,
                 @JsonProperty("target") DataSource target,
-                @JsonProperty("extra") Map<String, Object> extra) {
+                @JsonProperty("extra") List<Extra> extra) {
         this.source = requireNonNull(source);
         this.target = requireNonNull(target);
         this.tag = tag;
@@ -52,14 +53,13 @@ public class Task {
 
     public String toJson() throws RuntimeException {
         try {
-            String task = mapper.writeValueAsString(this);
-            return task;
+            return mapper.writeValueAsString(this);
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize task object to JSON string", e);
         }
     }
 
-    public Map<String, Object> getExtra() {
+    public List<Extra> getExtra() {
         return extra;
     }
 
@@ -90,7 +90,7 @@ public class Task {
         return triesCount - 1;
     }
 
-    public void setExtra(Map<String, Object> extra) {
+    public void setExtra(List<Extra> extra) {
         this.extra = extra;
     }
 

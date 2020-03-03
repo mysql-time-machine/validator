@@ -6,12 +6,15 @@ import com.booking.validator.data.transformation.TransformationTypes;
 import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
 import com.booking.validator.task.TaskComparisonResult;
+import com.booking.validator.task.extra.AcceptableRanges;
+import com.booking.validator.task.extra.Extra;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TestTransformations {
@@ -57,7 +60,11 @@ public class TestTransformations {
         Task taskV1 = new Task("unit_test", dataSource, dataSource2, null);
         System.out.println(taskV1.toJson());
         ActiveDataSourceConnections.getInstance().add("constantSource", Types.CONSTANT.getValue(), null);
-        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskV1);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Task taskDeserialized = mapper.readValue(taskV1.toJson(), Task.class);
+
+        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskDeserialized);
         TaskComparisonResult taskComparisonResult = qcft.get().get();
         assertTrue(taskComparisonResult.isOk());
 
@@ -79,14 +86,19 @@ public class TestTransformations {
         DataSource dataSource2 = new DataSource(
                 "constantSource",
                 new ConstantQueryOptions("constant", (Map<String, Object>)data2, null));
-        Task taskV1 = new Task("unit_test", dataSource, dataSource2, new HashMap<String, Object>(){{
-            put("ranges", new HashMap<String, Object>(){{
-                put("b", 2);
-            }});
-        }});
+        List<Extra> extraList = Extra.builder();
+        extraList.add(new AcceptableRanges()
+                    .add("b", 3.0)
+                    .add("c", 4));
+        Task taskV1 = new Task("unit_test", dataSource, dataSource2, extraList);
+
         System.out.println(taskV1.toJson());
         ActiveDataSourceConnections.getInstance().add("constantSource", Types.CONSTANT.getValue(), null);
-        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskV1);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Task taskDeserialized = mapper.readValue(taskV1.toJson(), Task.class);
+
+        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskDeserialized);
         TaskComparisonResult taskComparisonResult = qcft.get().get();
 
         assertTrue(taskComparisonResult.isOk());
