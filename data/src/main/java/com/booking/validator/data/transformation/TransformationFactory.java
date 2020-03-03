@@ -15,6 +15,7 @@ public class TransformationFactory {
     private static LinkedHashMap<TransformationTypes, Transformation> prioritizedTransformationMap =
             new LinkedHashMap<TransformationTypes, Transformation>(){{
         put(TransformationTypes.IGNORE_COLUMNS, IgnoreColumnsTransformation.getInstance());
+        put(TransformationTypes.KEEP_COLUMNS, KeepColumnsTransformation.getInstance());
         put(TransformationTypes.TIMESTAMPS_TO_EPOCHS, TimestampsToEpochsTransformation.getInstance());
         put(TransformationTypes.MAP_NULL_COLUMNS, MapNullColumnsTransformation.getInstance());
         put(TransformationTypes.ALIAS_COLUMNS, AliasColumnsTransformation.getInstance());
