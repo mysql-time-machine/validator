@@ -11,13 +11,13 @@ import static java.util.Objects.requireNonNull;
 /**
  * Created by dbatheja on 07/02/20.
  */
-public class MysqQuerylOptions extends DataSourceQueryOptions {
+public class MysqlQueryOptions extends DataSourceQueryOptions {
     private final String tableName;
     private final Map<String, Object> primaryKeys;
     private final Map<String, Object> transformations;
 
     @JsonCreator
-    public MysqQuerylOptions(@JsonProperty("type") String type,
+    public MysqlQueryOptions(@JsonProperty("type") String type,
                              @JsonProperty("table_name") final String tableName,
                              @JsonProperty("primary_keys") final Map<String, Object> primaryKeys,
                              @JsonProperty("transformations") final Map<String, Object> transformations) {

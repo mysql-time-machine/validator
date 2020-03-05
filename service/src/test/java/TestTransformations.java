@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,36 @@ public class TestTransformations {
         ObjectMapper mapper = new ObjectMapper();
         Task taskDeserialized = mapper.readValue(taskV1.toJson(), Task.class);
 
+        QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskDeserialized);
+        TaskComparisonResult taskComparisonResult = qcft.get().get();
+        assertTrue(taskComparisonResult.isOk());
+
+        finalize();
+    }
+
+    @Test
+    public void testIgnoreColumnsTransformation() throws Exception {
+        HashMap<String, Object> data1 = new HashMap<String, Object>();
+        data1.put("a", "a");
+        data1.put("b", "a");
+        HashMap<String, Object> transformations = new HashMap<String, Object>();
+        transformations.put(TransformationTypes.IGNORE_COLUMNS.getValue(), new ArrayList<String>(){{add("a");}});
+        DataSource dataSource = new DataSource(
+                "constantSource",
+                new ConstantQueryOptions("constant", (Map<String, Object>)data1, transformations));
+
+        HashMap<String, Object> data2 = new HashMap<String, Object>();
+        data2.put("b", "a");
+        DataSource dataSource2 = new DataSource(
+                "constantSource",
+                new ConstantQueryOptions("constant", (Map<String, Object>)data2, null));
+        Task taskV1 = new Task("unit_test", dataSource, dataSource2, null);
+        System.out.println(taskV1.toJson());
+        ActiveDataSourceConnections.getInstance().add("constantSource", Types.CONSTANT.getValue(), null);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Task taskDeserialized = mapper.readValue(taskV1.toJson(), Task.class);
+        System.out.println("Deserialized:\n"+taskDeserialized.toJson());
         QueryConnectorsForTask qcft = new QueryConnectorsForTask(taskDeserialized);
         TaskComparisonResult taskComparisonResult = qcft.get().get();
         assertTrue(taskComparisonResult.isOk());

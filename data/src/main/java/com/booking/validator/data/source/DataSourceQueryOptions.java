@@ -3,7 +3,7 @@ package com.booking.validator.data.source;
 import com.booking.validator.data.source.bigtable.BigtableQueryOptions;
 import com.booking.validator.data.source.constant.ConstantQueryOptions;
 import com.booking.validator.data.source.hbase.HbaseQueryOptions;
-import com.booking.validator.data.source.mysql.MysqQuerylOptions;
+import com.booking.validator.data.source.mysql.MysqlQueryOptions;
 import com.fasterxml.jackson.annotation.*;
 
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ConstantQueryOptions.class, name = Types.Constants.CONSTANT_VALUE),
-        @JsonSubTypes.Type(value = MysqQuerylOptions.class, name = Types.Constants.MYSQL_VALUE),
+        @JsonSubTypes.Type(value = MysqlQueryOptions.class, name = Types.Constants.MYSQL_VALUE),
         @JsonSubTypes.Type(value = HbaseQueryOptions.class, name = Types.Constants.HBASE_VALUE),
         @JsonSubTypes.Type(value = BigtableQueryOptions.class, name = Types.Constants.BIGTABLE_VALUE)
 })
