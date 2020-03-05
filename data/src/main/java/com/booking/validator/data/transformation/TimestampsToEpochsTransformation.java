@@ -57,8 +57,10 @@ public class TimestampsToEpochsTransformation implements Transformation {
         return rawValue;
     }
 
-    private boolean isTimestampColumn(Object object) {
-        return true;
+    private boolean isTimestampColumn(Object value) {
+        if (value == null) return false;
+        if (value instanceof Timestamp) return true;
+        return false;
     }
 
     @Override
