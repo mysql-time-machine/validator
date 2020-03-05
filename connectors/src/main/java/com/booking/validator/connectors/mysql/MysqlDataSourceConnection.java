@@ -4,7 +4,7 @@ import com.booking.validator.connectors.DataSourceConnection;
 import com.booking.validator.data.Data;
 
 import com.booking.validator.data.source.DataSourceQueryOptions;
-import com.booking.validator.data.source.mysql.MysqQuerylOptions;
+import com.booking.validator.data.source.mysql.MysqlQueryOptions;
 import com.booking.validator.utils.HexEncoder;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
@@ -101,7 +101,7 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
 
     @Override
     public Data query(DataSourceQueryOptions options) {
-        MysqQuerylOptions queryOptions = (MysqQuerylOptions) options;
+        MysqlQueryOptions queryOptions = (MysqlQueryOptions) options;
         List<String> columns = new ArrayList<>();
         List<Object> values = new ArrayList<>();
         queryOptions.getPrimaryKeys().forEach((key, obj)->{
