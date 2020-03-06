@@ -3,10 +3,13 @@ package com.booking.validator.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookupFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -92,14 +95,13 @@ public class ValidatorConfiguration {
 
         if (path == null) throw new IllegalArgumentException("The path to file to is missing");
 
+        StringSubstitutor stringSubstitutor = new StringSubstitutor(StringLookupFactory.INSTANCE.environmentVariableStringLookup());
+
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
-        try (InputStream in = Files.newInputStream(Paths.get(path))){
+        String contents = stringSubstitutor.replace(new String(Files.readAllBytes(Paths.get(path))));
 
-            return mapper.readValue( in , ValidatorConfiguration.class);
-
-        }
-
+        return mapper.readValue(contents, ValidatorConfiguration.class);
     }
 
     @JsonProperty("data_sources")

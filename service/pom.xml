@@ -66,6 +66,13 @@
             <version>0.0.1</version>
         </dependency>
 
+        <!-- Commons text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.8</version>
+        </dependency>
+
         <!-- Kafka tasks supplier -->
 
         <dependency>
