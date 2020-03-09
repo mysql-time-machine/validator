@@ -296,7 +296,7 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
         try (Connection connection = source.getConnection()) {
             connection.close();
         } catch (SQLException e) {
-            LOGGER.error("Error while closing client connection: ", e.getStackTrace());
+            LOGGER.error("Error while closing client connection: " + e.getStackTrace().toString());
         }
     }
 
