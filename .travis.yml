@@ -15,12 +15,18 @@ cache:
     - '$HOME/.sonar/cache'
 
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify -V -U -B
+  - mvn test -B
 
 after_success:
   - bash <(echo "SUCCESS")
 
 services:
   - docker
+
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: master
 
 dist: trusty

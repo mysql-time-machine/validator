@@ -10,7 +10,7 @@
 - Can be used for validating data between any two data sources.
 
 ### Configuration
-- Sample validator configuration is in `validator-conf.yaml`
+- Sample validator configuration is in `config.yaml`
 - Config options:
     - **data_sources**: Currently supports `mysql`/`hbase`/`bigtable`
     - **task_supplier**: Currently supports `kafka`
