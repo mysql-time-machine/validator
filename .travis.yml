@@ -17,6 +17,9 @@ cache:
 script:
   - mvn test -B
 
+before_install:
+  - docker build . -t bookingcom/mysqltimemachine-validator
+
 after_success:
   - bash <(echo "SUCCESS")
 
