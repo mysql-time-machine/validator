@@ -1,0 +1,32 @@
+sudo: false
+language: java
+install: true
+
+jdk:
+  - openjdk8
+
+addons:
+  hosts:
+    - HBASE_HOST
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
+
+script:
+  - mvn test -B
+
+after_success:
+  - bash <(echo "SUCCESS")
+
+services:
+  - docker
+
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: master
+
+dist: trusty
