@@ -2,7 +2,7 @@ package com.booking.validator.task.extra;
 
 import com.booking.validator.data.Data;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.apache.htrace.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
