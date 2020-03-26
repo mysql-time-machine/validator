@@ -2,6 +2,7 @@ package com.booking.validator.data.source.mysql;
 
 import com.booking.validator.data.source.DataSourceQueryOptions;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
@@ -27,10 +28,13 @@ public class MysqlQueryOptions extends DataSourceQueryOptions {
         this.transformations = transformations;
     }
 
+    @JsonGetter("table_name")
     public String getTableName() { return tableName; }
 
+    @JsonGetter("primary_keys")
     public Map<String, Object> getPrimaryKeys() { return primaryKeys; }
 
+    @JsonGetter("transformations")
     public Map<String, Object> getTransformations() {
         return transformations;
     }

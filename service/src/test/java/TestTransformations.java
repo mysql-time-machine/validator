@@ -2,6 +2,7 @@ import com.booking.validator.connectors.ActiveDataSourceConnections;
 import com.booking.validator.data.source.DataSource;
 import com.booking.validator.data.source.Types;
 import com.booking.validator.data.source.constant.ConstantQueryOptions;
+import com.booking.validator.data.source.mysql.MysqlQueryOptions;
 import com.booking.validator.data.transformation.TransformationTypes;
 import com.booking.validator.service.supplier.data.source.QueryConnectorsForTask;
 import com.booking.validator.task.Task;
@@ -100,6 +101,22 @@ public class TestTransformations {
         assertTrue(taskComparisonResult.isOk());
 
         finalize();
+    }
+
+    @Test
+    public void testMysqlQueryOptions() throws Exception {
+        Map<String, Object> prima = new HashMap<String, Object>(){{put("name", "dbatheja");}};
+        DataSource dataSource = new DataSource(
+                "mysqlSource",
+                new MysqlQueryOptions(Types.MYSQL.getValue(),
+                                      "tab",
+                                      prima,
+                                      null));
+        Task task = new Task("unit_test", dataSource, dataSource, null);
+        System.out.println(task.toJson());
+        ObjectMapper mapper = new ObjectMapper();
+        Task taskDeserialized = mapper.readValue(task.toJson(), Task.class);
+        System.out.println(taskDeserialized.toJson());
     }
 
     @Test
