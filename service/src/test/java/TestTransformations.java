@@ -1,6 +1,7 @@
 import com.booking.validator.connectors.ActiveDataSourceConnections;
 import com.booking.validator.data.source.DataSource;
 import com.booking.validator.data.source.Types;
+import com.booking.validator.data.source.bigtable.BigtableQueryOptions;
 import com.booking.validator.data.source.constant.ConstantQueryOptions;
 import com.booking.validator.data.source.mysql.MysqlQueryOptions;
 import com.booking.validator.data.transformation.TransformationTypes;
@@ -112,6 +113,23 @@ public class TestTransformations {
                                       "tab",
                                       prima,
                                       null));
+        Task task = new Task("unit_test", dataSource, dataSource, null);
+        System.out.println(task.toJson());
+        ObjectMapper mapper = new ObjectMapper();
+        Task taskDeserialized = mapper.readValue(task.toJson(), Task.class);
+        System.out.println(taskDeserialized.toJson());
+    }
+
+    @Test
+    public void testBigtableQueryOptions() throws Exception {
+        Map<String, Object> prima = new HashMap<String, Object>(){{put("name", "dbatheja");}};
+        DataSource dataSource = new DataSource(
+                "bigtableSource",
+                new BigtableQueryOptions(
+                        "tab",
+                        "9753fe74%3B630877202%3B2022-02-04%3B17773200",
+                        "d",
+                        null));
         Task task = new Task("unit_test", dataSource, dataSource, null);
         System.out.println(task.toJson());
         ObjectMapper mapper = new ObjectMapper();

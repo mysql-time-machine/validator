@@ -2,6 +2,7 @@ package com.booking.validator.data.source.hbase;
 
 import com.booking.validator.data.source.DataSourceQueryOptions;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
@@ -30,18 +31,22 @@ public class HbaseQueryOptions extends DataSourceQueryOptions {
         this.transformations = transformations;
     }
 
+    @JsonGetter("table_name")
     public String getTableName() {
         return tableName;
     }
 
+    @JsonGetter("row")
     public String getRow() {
         return row;
     }
 
+    @JsonGetter("column_family")
     public String getColumnFamily() {
         return columnFamily;
     }
 
+    @JsonProperty("transformations")
     public Map<String, Object> getTransformations() {
         return transformations;
     }
