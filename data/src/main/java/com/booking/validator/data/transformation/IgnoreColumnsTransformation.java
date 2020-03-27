@@ -21,6 +21,7 @@ public class IgnoreColumnsTransformation implements Transformation {
 
     @Override
     public Data apply(Data data, Object options) {
+        if (data == null) return data;
         List<String> ignoreColumns;
         if(options instanceof ArrayList) {
             ignoreColumns = ((ArrayList<String>) options);

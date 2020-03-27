@@ -204,8 +204,8 @@ public class MysqlDataSourceConnection implements DataSourceConnection {
         } catch (SQLException e) {
 
             LOGGER.error("Failed resolving a data pointer to mysql source {} using the query {} ", source, selectAllQuery, e);
-
-            throw new RuntimeException(e);
+            return null;
+            // throw new RuntimeException(e);
         }
 
     }
