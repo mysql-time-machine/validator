@@ -23,6 +23,7 @@ public class TimestampsToEpochsTransformation implements Transformation {
 
     @Override
     public Data apply(Data data, Object options) {
+        if (data == null) return data;
         List<String> timestampColumns = new ArrayList<String>();
         boolean applyToAll;
         if(options instanceof List) {

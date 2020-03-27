@@ -22,6 +22,7 @@ public class KeepColumnsTransformation implements Transformation {
 
     @Override
     public Data apply(Data data, Object options) {
+        if (data == null) return data;
         List<String> keepColumns;
         if(options instanceof ArrayList) {
             keepColumns = ((ArrayList<String>) options);

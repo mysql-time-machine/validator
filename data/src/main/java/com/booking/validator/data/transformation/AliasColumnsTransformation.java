@@ -20,6 +20,7 @@ public class AliasColumnsTransformation implements Transformation {
 
     @Override
     public Data apply(Data data, Object options) {
+        if (data == null) return data;
         HashMap<String, String> aliasColumns;
         if(options instanceof Map) {
             aliasColumns = ((HashMap<String, String>) options);

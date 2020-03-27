@@ -21,6 +21,7 @@ public class MapNullColumnsTransformation implements Transformation {
 
     @Override
     public Data apply(Data data, Object options) {
+        if (data == null) return data;
         Map<String, Object> mapNullColumns = new HashMap<String, Object>();
         boolean applyToAll;
         Object applyToAllValue;

@@ -1,6 +1,6 @@
 package com.booking.validator.data;
 
-import org.apache.hadoop.hbase.shaded.org.apache.directory.api.util.Strings;
+import org.apache.directory.api.util.Strings;
 
 import java.util.*;
 import java.util.function.BiFunction;
