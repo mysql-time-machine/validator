@@ -1,3 +1,6 @@
 #!/bin/bash
+source version
+
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 docker push bookingcom/mysqltimemachine-validator:latest
+docker push bookingcom/mysqltimemachine-validator:$DEFAULT_VERSION
