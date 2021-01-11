@@ -3,7 +3,7 @@
     <parent>
         <artifactId>validator</artifactId>
         <groupId>com.booking.validator</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -63,13 +63,13 @@
         <dependency>
             <groupId>com.booking.validator</groupId>
             <artifactId>data</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.3</version>
         </dependency>
 
         <dependency>
             <groupId>com.booking.validator</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.3</version>
         </dependency>
 
         <!-- Commons text -->
@@ -141,13 +141,13 @@
         <dependency>
             <groupId>com.booking.validator</groupId>
             <artifactId>connectors</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.booking.validator</groupId>
             <artifactId>connectors</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.3</version>
             <scope>compile</scope>
         </dependency>
 

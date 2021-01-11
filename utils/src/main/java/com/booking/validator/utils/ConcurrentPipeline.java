@@ -48,12 +48,12 @@ public class ConcurrentPipeline<T> implements Service {
     }
 
     private void startTaskAsync(){
-        if (run) CompletableFuture.supplyAsync(supplier)
+        if (run) CompletableFuture.supplyAsync( supplier )
                 .thenCompose( Supplier::get )
                 .whenComplete( consumer )
                 .whenComplete( (x,t)-> {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
