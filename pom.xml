@@ -185,7 +185,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
+            <version>3.0.0</version>
             <type>maven-plugin</type>
             <exclusions>
                 <exclusion>
@@ -206,14 +206,14 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>2.2.1</version>
+            <version>3.0.0</version>
             <type>maven-plugin</type>
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>versions-maven-plugin</artifactId>
-            <version>2.5</version>
+            <version>2.8.1</version>
             <type>maven-plugin</type>
         </dependency>
     </dependencies>
